@@ -1,14 +1,17 @@
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { URL } from 'url';
-import { join } from 'path';
+import { join, extname } from 'path';
 import { tmpdir } from 'os';
-import { mkdir, writeFile, readFile } from 'fs/promises';
+import { mkdir, writeFile, readFile, stat } from 'fs/promises';
 import { Hocuspocus } from '@hocuspocus/server';
 import { WebSocketServer } from 'ws';
 
 const host = process.env.HOST || '0.0.0.0';
 const port = parseInt(process.env.PORT || '1234');
 const AUTH_TOKEN = process.env.AUTH_TOKEN;
+
+// Path to the frontend build artifacts
+const FRONTEND_DIST = join(__dirname, '../frontend/dist');
 
 // ---------------------------------------------------------------------------
 // Hocuspocus Configuration
@@ -35,6 +38,36 @@ function setCorsHeaders(res: ServerResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
+
+const MIME_TYPES: Record<string, string> = {
+  '.html': 'text/html',
+  '.js': 'text/javascript',
+  '.css': 'text/css',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.jpg': 'image/jpg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.wav': 'audio/wav',
+  '.mp4': 'video/mp4',
+  '.woff': 'application/font-woff',
+  '.ttf': 'application/font-ttf',
+  '.eot': 'application/vnd.ms-fontobject',
+  '.otf': 'application/font-otf',
+  '.wasm': 'application/wasm',
+};
+
+async function serveStaticFile(filePath: string, res: ServerResponse) {
+  try {
+    const data = await readFile(filePath);
+    const contentType = MIME_TYPES[extname(filePath)] || 'application/octet-stream';
+    res.writeHead(200, { 'Content-Type': contentType });
+    res.end(data);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function handlePdfUpload(roomId: string, req: IncomingMessage, res: ServerResponse) {
@@ -77,7 +110,7 @@ async function handlePdfDownload(roomId: string, res: ServerResponse) {
   }
 }
 
-const server = createServer((req, res) => {
+const server = createServer(async (req, res) => {
   setCorsHeaders(res);
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
@@ -86,29 +119,46 @@ const server = createServer((req, res) => {
   }
 
   const url = new URL(req.url ?? '/', `http://${req.headers.host}`);
-  const parts = url.pathname.split('/').filter(Boolean);
+  const pathname = url.pathname;
+  const parts = pathname.split('/').filter(Boolean);
+  
+  // PDF Routes
   const isPdfRoute = parts.length === 3 && parts[0] === 'room' && parts[2] === 'pdf';
   const roomId = isPdfRoute ? parts[1] : null;
 
-  if (req.url === '/' && req.method === 'GET') {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('Hocuspocus server ok');
-    return;
-  }
-
   if (isPdfRoute && roomId && ROOM_ID_RE.test(roomId)) {
     if (req.method === 'POST') {
-      handlePdfUpload(roomId, req, res).catch(() => { res.writeHead(500); res.end(); });
+      await handlePdfUpload(roomId, req, res).catch(() => { res.writeHead(500); res.end(); });
       return;
     }
     if (req.method === 'GET') {
-      handlePdfDownload(roomId, res).catch(() => { res.writeHead(500); res.end(); });
+      await handlePdfDownload(roomId, res).catch(() => { res.writeHead(500); res.end(); });
       return;
     }
   }
 
-  res.writeHead(404);
-  res.end();
+  // Health check
+  if (pathname === '/health' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('ok');
+    return;
+  }
+
+  // Static files (Frontend)
+  let staticFilePath = join(FRONTEND_DIST, pathname === '/' ? 'index.html' : pathname);
+  
+  // SPA fallback: if file doesn't exist, serve index.html
+  try {
+    await stat(staticFilePath);
+  } catch {
+    staticFilePath = join(FRONTEND_DIST, 'index.html');
+  }
+
+  const served = await serveStaticFile(staticFilePath, res);
+  if (!served) {
+    res.writeHead(404);
+    res.end('Not found');
+  }
 });
 
 // ---------------------------------------------------------------------------
