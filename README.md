@@ -46,7 +46,7 @@ Start both the backend server and the frontend development server concurrently:
 npm run dev
 ```
 
-- **Frontend:** http://localhost:5173
+- **Frontend:** http://localhost:1234
 - **Backend:** ws://localhost:1234 (also handles PDF uploads/downloads via HTTP)
 
 Alternatively, you can start them separately:
@@ -69,8 +69,7 @@ You can run the entire application using Docker Compose:
 docker-compose up --build
 ```
 
-- **Frontend:** http://localhost:8080
-- **Backend:** http://localhost:1234
+- **Frontend & Backend:** http://localhost:1234
 
 This setup uses a persistent volume for PDF storage, so uploaded files will survive container restarts.
 
