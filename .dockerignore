@@ -1,0 +1,13 @@
+node_modules
+dist
+.idea
+.git
+test-results
+tests
+playwright-report
+blob-report
+.DS_Store
+README.md
+CLAUDE.md
+Dockerfile
+docker-compose.yml

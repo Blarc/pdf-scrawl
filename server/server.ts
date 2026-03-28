@@ -6,7 +6,7 @@ import { mkdir, writeFile, readFile } from 'fs/promises';
 import { Hocuspocus } from '@hocuspocus/server';
 import { WebSocketServer } from 'ws';
 
-const host = process.env.HOST || 'localhost';
+const host = process.env.HOST || '0.0.0.0';
 const port = parseInt(process.env.PORT || '1234');
 const AUTH_TOKEN = process.env.AUTH_TOKEN;
 

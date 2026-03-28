@@ -7,10 +7,10 @@ import { CommentPanel } from './components/CommentPanel';
 import { UserPresence } from './components/UserPresence';
 import type { ToolMode } from './types';
 
-// In production, derive this from your auth system.
+// In production, derive these from environment variables or window config.
 const USER_NAME = `User-${Math.floor(Math.random() * 9000) + 1000}`;
-const WS_URL = 'ws://localhost:1234';
-const API_URL = 'http://localhost:1234';
+const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:1234';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:1234';
 
 /** Read the room ID from the URL hash, e.g. "#abc123" → "abc123". */
 function getRoomFromHash(): string | null {

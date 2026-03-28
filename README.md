@@ -61,6 +61,19 @@ Run the Playwright E2E tests:
 npm test
 ```
 
+### 🐳 Docker
+
+You can run the entire application using Docker Compose:
+
+```bash
+docker-compose up --build
+```
+
+- **Frontend:** http://localhost:8080
+- **Backend:** http://localhost:1234
+
+This setup uses a persistent volume for PDF storage, so uploaded files will survive container restarts.
+
 ## ⚙️ Configuration
 
 The backend server can be configured via environment variables (all optional):
