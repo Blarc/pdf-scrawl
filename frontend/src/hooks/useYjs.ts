@@ -1,25 +1,24 @@
 import * as Y from 'yjs';
-import { WebsocketProvider } from 'y-websocket';
+import { HocuspocusProvider } from '@hocuspocus/provider';
 import { useEffect, useRef, useState } from 'react';
 
 export interface YjsContext {
   ydoc: Y.Doc;
-  provider: WebsocketProvider;
-  awareness: WebsocketProvider['awareness'];
+  provider: HocuspocusProvider;
+  awareness: HocuspocusProvider['awareness'];
   connected: boolean;
 }
 
 interface YjsInstances {
   ydoc: Y.Doc;
-  provider: WebsocketProvider;
+  provider: HocuspocusProvider;
 }
 
 /**
  * serverUrl  – WebSocket base URL, e.g. "ws://localhost:1234"
  * roomName   – document/room identifier, e.g. "my-doc"
- *              Maps to the server path  /room/<roomName>  so rooms are isolated.
  * userName   – display name shown in presence avatars
- * authToken  – optional bearer token forwarded as ?token=<value>
+ * authToken  – optional bearer token passed to Hocuspocus
  */
 export function useYjs(
   serverUrl: string,
@@ -27,33 +26,24 @@ export function useYjs(
   userName: string,
   authToken?: string
 ): YjsContext {
-  // useState lazy initializer runs exactly once per component mount (React
-  // StrictMode included — it only double-invokes the render function, not the
-  // initializer). We do NOT call connect() here so that the provider survives
-  // the StrictMode double-effect cycle below.
+  // useState lazy initializer runs exactly once per component mount.
   const [{ ydoc, provider }] = useState<YjsInstances>(() => {
     const doc = new Y.Doc();
     const color = '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
 
-    const base = serverUrl.replace(/\/$/, '');
-    const wsUrl = authToken
-      ? `${base}?token=${encodeURIComponent(authToken)}`
-      : base;
-
-    const prov = new WebsocketProvider(
-      wsUrl,
-      `room/${encodeURIComponent(roomName)}`,
-      doc,
-      { connect: false } // connect in useEffect so cleanup can disconnect without destroy
-    );
+    const prov = new HocuspocusProvider({
+      url: serverUrl,
+      name: `room/${roomName}`, // Match the old /room/<name> structure
+      document: doc,
+      token: authToken,
+      connect: false, // connect in useEffect so cleanup can disconnect without destroy
+    });
     prov.awareness.setLocalStateField('user', { name: userName, color });
     return { ydoc: doc, provider: prov };
   });
 
   const [connected, setConnected] = useState(false);
-  // Track whether this is the real final mount (not StrictMode's first-pass
-  // mount that is immediately cleaned up). We use a ref rather than state to
-  // avoid an extra render cycle.
+  // Track whether this is the real final mount (not StrictMode's first-pass mount).
   const mountedRef = useRef(false);
 
   useEffect(() => {
@@ -63,7 +53,7 @@ export function useYjs(
     provider.on('status', handleStatus);
 
     // Connect (or reconnect if this is StrictMode's second mount).
-    if (!provider.wsconnected && !provider.wsconnecting) {
+    if (!provider.isConnected && !provider.isConnecting) {
       provider.connect();
     }
     mountedRef.current = true;
@@ -72,11 +62,7 @@ export function useYjs(
       mountedRef.current = false;
       provider.off('status', handleStatus);
       // Disconnect the WebSocket but keep the provider alive so it can
-      // reconnect on StrictMode's second useEffect invocation.  We only
-      // fully destroy on component unmount, which we detect by checking
-      // that no subsequent effect re-mounted us.  We defer the destroy
-      // by one microtask so the StrictMode re-mount can set mountedRef
-      // back to true before we decide to destroy.
+      // reconnect on StrictMode's second useEffect invocation.
       provider.disconnect();
       Promise.resolve().then(() => {
         if (!mountedRef.current) {
