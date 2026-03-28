@@ -3,7 +3,7 @@ import type { Awareness } from 'y-protocols/awareness';
 import type { AwarenessState } from '../types';
 
 interface Props {
-  awareness: Awareness;
+  awareness: Awareness | null;
   connected: boolean;
 }
 
@@ -14,11 +14,13 @@ export function UserPresence({ awareness, connected }: Props) {
 
   const entries = useSyncExternalStore(
     (onChange) => {
+      if (!awareness) return () => {};
       const cb = () => onChange();
       awareness.on('change', cb);
       return () => awareness.off('change', cb);
     },
     (): AwarenessEntry[] => {
+      if (!awareness) return [];
       // Keyed by clientId so React can track avatar identity across join/leave
       const next = Array.from(
         awareness.getStates().entries()

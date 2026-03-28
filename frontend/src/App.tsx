@@ -115,7 +115,7 @@ function RoomApp({ roomId, onCopyLink, copyLabel }: RoomAppProps) {
           >
             {copyLabel}
           </button>
-          <UserPresence awareness={awareness} connected={connected} />
+          <UserPresence awareness={awareness!} connected={connected} />
         </div>
       </div>
 

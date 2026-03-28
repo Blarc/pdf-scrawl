@@ -16,7 +16,7 @@ import type { PageViewport } from 'pdfjs-dist';
 export function screenToNormalized(
   screenX: number,
   screenY: number,
-  el: HTMLElement
+  el: Element
 ): [number, number] {
   const rect = el.getBoundingClientRect();
   return [

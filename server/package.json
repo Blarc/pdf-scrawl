@@ -2,9 +2,11 @@
   "name": "server",
   "private": true,
   "version": "0.0.1",
+  "type": "module",
   "scripts": {
     "dev": "tsx --watch server.ts",
-    "start": "tsx server.ts"
+    "build": "tsc",
+    "start": "node dist/server.js"
   },
   "dependencies": {
     "@hocuspocus/server": "^3.4.4",

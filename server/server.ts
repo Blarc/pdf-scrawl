@@ -11,7 +11,7 @@ const port = parseInt(process.env.PORT || '1234');
 const AUTH_TOKEN = process.env.AUTH_TOKEN;
 
 // Path to the frontend build artifacts
-const FRONTEND_DIST = join(__dirname, '../frontend/dist');
+const FRONTEND_DIST = process.env.FRONTEND_DIST || join(process.cwd(), '../frontend/dist');
 
 // ---------------------------------------------------------------------------
 // Hocuspocus Configuration

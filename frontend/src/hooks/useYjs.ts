@@ -1,5 +1,5 @@
 import * as Y from 'yjs';
-import { HocuspocusProvider } from '@hocuspocus/provider';
+import { HocuspocusProvider, HocuspocusProviderWebsocket } from '@hocuspocus/provider';
 import { useEffect, useRef, useState } from 'react';
 
 export interface YjsContext {
@@ -15,8 +15,8 @@ interface YjsInstances {
 }
 
 /**
- * serverUrl  – WebSocket base URL, e.g. "ws://localhost:1234"
- * roomName   – document/room identifier, e.g. "my-doc"
+ * serverUrl  – WebSocket base URL, e.g. \"ws://localhost:1234\"
+ * roomName   – document/room identifier, e.g. \"my-doc\"
  * userName   – display name shown in presence avatars
  * authToken  – optional bearer token passed to Hocuspocus
  */
@@ -31,14 +31,21 @@ export function useYjs(
     const doc = new Y.Doc();
     const color = '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
 
-    const prov = new HocuspocusProvider({
+    const websocketProvider = new HocuspocusProviderWebsocket({
       url: serverUrl,
-      name: `room/${roomName}`, // Match the old /room/<name> structure
+      autoConnect: false,
+    });
+
+    const prov = new HocuspocusProvider({
+      websocketProvider,
+      name: `room/${roomName}`,
       document: doc,
       token: authToken,
-      connect: false, // connect in useEffect so cleanup can disconnect without destroy
     });
-    prov.awareness.setLocalStateField('user', { name: userName, color });
+    
+    if (prov.awareness) {
+      prov.awareness.setLocalStateField('user', { name: userName, color });
+    }
     return { ydoc: doc, provider: prov };
   });
 
@@ -53,7 +60,8 @@ export function useYjs(
     provider.on('status', handleStatus);
 
     // Connect (or reconnect if this is StrictMode's second mount).
-    if (!provider.isConnected && !provider.isConnecting) {
+    const wsStatus = provider.configuration.websocketProvider.status;
+    if (wsStatus !== 'connected' && wsStatus !== 'connecting') {
       provider.connect();
     }
     mountedRef.current = true;
