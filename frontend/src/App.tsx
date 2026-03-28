@@ -96,7 +96,7 @@ function RoomApp({ roomId, onCopyLink, copyLabel }: RoomAppProps) {
         }}
       >
         <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.3px' }}>
-          PDF Annotate
+          PDF Scrawl
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button

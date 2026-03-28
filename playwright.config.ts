@@ -7,7 +7,8 @@ export default defineConfig({
   fullyParallel: false, // tests share a WS server
   reporter: [['list']],
   use: {
-    baseURL: 'http://localhost:5173',
+    // Point baseURL to the backend server which now also serves the frontend
+    baseURL: 'http://localhost:1234',
     trace: 'on-first-retry',
     headless: true,
   },
@@ -17,19 +18,14 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  // Start the WS server + Vite dev server before running tests
+  // Start the backend server before running tests.
+  // The backend server now serves both the API and the frontend static files.
   webServer: [
     {
-      command: 'npm run dev:server',
+      command: 'npm run dev:server', // Uses tsx server.ts for development, will build with tsc in production
       port: 1234,
-      reuseExistingServer: true,
+      reuseExistingServer: true, // Allow Playwright to reuse if already running, but we'll manage its lifecycle
       timeout: 20_000,
-    },
-    {
-      command: 'npm run dev:frontend',
-      port: 5173,
-      reuseExistingServer: true,
-      timeout: 30_000,
     },
   ],
 });

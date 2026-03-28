@@ -11,18 +11,28 @@ const port = parseInt(process.env.PORT || '1234');
 const AUTH_TOKEN = process.env.AUTH_TOKEN;
 
 // Path to the frontend build artifacts
-const FRONTEND_DIST = process.env.FRONTEND_DIST || join(process.cwd(), '../frontend/dist');
+// Using process.cwd() because __dirname is not available in ES modules
+const FRONTEND_DIST = join(process.cwd(), '../frontend/dist');
 
 // ---------------------------------------------------------------------------
 // Hocuspocus Configuration
 // ---------------------------------------------------------------------------
 const hocuspocus = new Hocuspocus({
   name: 'pdf-scrawl-hocuspocus',
-  async onAuthenticate({ token }) {
+  async onAuthenticate({ token, documentName }) {
+    console.log(`Authenticating connection for document: ${documentName}`);
     if (AUTH_TOKEN && token !== AUTH_TOKEN) {
       throw new Error('Unauthorized');
     }
   },
+  async onConnect({ documentName }) {
+    console.log(`New connection to document: ${documentName}`);
+  },
+  async onLoadDocument({ documentName, document }) {
+    console.log(`Loading document: ${documentName}`);
+    // Here you could load the document from a database if it exists
+    // For now, it's in-memory, so Hocuspocus handles it.
+  }
 });
 
 // ---------------------------------------------------------------------------
@@ -43,6 +53,7 @@ function setCorsHeaders(res: ServerResponse) {
 const MIME_TYPES: Record<string, string> = {
   '.html': 'text/html',
   '.js': 'text/javascript',
+  '.mjs': 'text/javascript',
   '.css': 'text/css',
   '.json': 'application/json',
   '.png': 'image/png',
@@ -167,6 +178,14 @@ const server = createServer(async (req, res) => {
 const wss = new WebSocketServer({ noServer: true });
 
 server.on('upgrade', (request, socket, head) => {
+  console.log(`Received upgrade request: ${request.method} ${request.url}`);
+  const upgradeHeader = request.headers.upgrade;
+  if (!upgradeHeader || upgradeHeader.toLowerCase() !== 'websocket') {
+    socket.destroy();
+    console.error('Not a WebSocket upgrade request.');
+    return;
+  }
+
   wss.handleUpgrade(request, socket, head, (ws) => {
     hocuspocus.handleConnection(ws, request);
   });

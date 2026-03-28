@@ -22,6 +22,10 @@ async function clickTool(page: Page, label: string) {
 // 1. Page loads
 // ---------------------------------------------------------------------------
 
+test.beforeEach(async ({ page }) => {
+  page.on('console', msg => console.log(`[Browser] ${msg.type()}: ${msg.text()}`));
+});
+
 test('renders the app shell', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByText('PDF Annotate')).toBeVisible();

@@ -42,6 +42,10 @@ export function useYjs(
       document: doc,
       token: authToken,
     });
+
+    // Required when passing a custom websocketProvider instance.
+    // Without this, the WS can connect but the provider won't send handshake/doc messages.
+    prov.attach();
     
     if (prov.awareness) {
       prov.awareness.setLocalStateField('user', { name: userName, color });
@@ -50,7 +54,6 @@ export function useYjs(
   });
 
   const [connected, setConnected] = useState(false);
-  // Track whether this is the real final mount (not StrictMode's first-pass mount).
   const mountedRef = useRef(false);
 
   useEffect(() => {
@@ -60,25 +63,27 @@ export function useYjs(
     provider.on('status', handleStatus);
 
     // Connect (or reconnect if this is StrictMode's second mount).
-    const wsStatus = provider.configuration.websocketProvider.status;
-    if (wsStatus !== 'connected' && wsStatus !== 'connecting') {
-      provider.connect();
+    const wsProvider = provider.configuration.websocketProvider;
+    if (wsProvider.status !== 'connected' && wsProvider.status !== 'connecting') {
+      console.log("Connecting...")
+      wsProvider.connect();
     }
     mountedRef.current = true;
 
     return () => {
       mountedRef.current = false;
       provider.off('status', handleStatus);
-      // Disconnect the WebSocket but keep the provider alive so it can
-      // reconnect on StrictMode's second useEffect invocation.
-      provider.disconnect();
+
+      const wsProv = provider.configuration.websocketProvider;
+      wsProv.disconnect();
+
       Promise.resolve().then(() => {
         if (!mountedRef.current) {
           provider.destroy();
           ydoc.destroy();
         } else {
           // StrictMode re-mounted: reconnect the provider
-          provider.connect();
+          wsProv.connect();
         }
       });
     };
