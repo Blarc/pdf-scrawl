@@ -7,6 +7,16 @@
     <style>
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body { overflow: hidden; }
+      
+      /* Mobile layout styles */
+      @media (max-width: 768px) {
+        .app-main {
+          flex-direction: column !important;
+        }
+        .sidebar-desktop {
+          display: none !important;
+        }
+      }
     </style>
   </head>
   <body>

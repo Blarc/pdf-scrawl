@@ -42,13 +42,22 @@ export function AnnotationLayer({
   const [drawState, setDrawState] = useState<DrawState>({ type: 'idle' });
 
   const getEventNorm = useCallback(
-    (e: React.MouseEvent): [number, number] => {
-      return screenToNormalized(e.clientX, e.clientY, svgRef.current!);
+    (e: React.MouseEvent | React.TouchEvent): [number, number] => {
+      let clientX, clientY;
+      if ('touches' in e) {
+        if (e.touches.length === 0) return [0, 0];
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+      return screenToNormalized(clientX, clientY, svgRef.current!);
     },
     []
   );
 
-  const handleMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
+  const handleMouseDown = (e: React.MouseEvent<SVGSVGElement> | React.TouchEvent<SVGSVGElement>) => {
     if (toolMode === 'rect') {
       const pt = getEventNorm(e);
       setDrawState({ type: 'rect', start: pt, current: pt });
@@ -58,7 +67,7 @@ export function AnnotationLayer({
     }
   };
 
-  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement> | React.TouchEvent<SVGSVGElement>) => {
     if (drawState.type === 'rect') {
       const current = getEventNorm(e);
       setDrawState((s) => (s.type === 'rect' ? { ...s, current } : s));
@@ -131,11 +140,16 @@ export function AnnotationLayer({
         // no hit-tested annotation; annotation elements re-enable pointer
         // events individually via their own onClick.
         pointerEvents: isDrawing ? 'all' : 'none',
+        touchAction: isDrawing ? 'none' : 'auto',
       }}
       onMouseDown={isDrawing ? handleMouseDown : undefined}
       onMouseMove={isDrawing ? handleMouseMove : undefined}
       onMouseUp={isDrawing ? handleMouseUp : undefined}
       onMouseLeave={isDrawing ? handleMouseLeave : undefined}
+      onTouchStart={isDrawing ? handleMouseDown : undefined}
+      onTouchMove={isDrawing ? handleMouseMove : undefined}
+      onTouchEnd={isDrawing ? handleMouseUp : undefined}
+      onTouchCancel={isDrawing ? handleMouseLeave : undefined}
     >
       {/* ── Persisted annotations ─────────────────────────────────────── */}
       {annotations.map((ann) => {

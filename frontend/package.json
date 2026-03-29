@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "VITE_WS_URL='ws://localhost:1234' vite",
+    "dev": "VITE_WS_URL='ws://localhost:1234' VITE_API_URL='http://localhost:1234' vite",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },

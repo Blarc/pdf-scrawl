@@ -10,11 +10,12 @@ import type { Annotation, ToolMode } from '../types';
 // returns its URL, which is the correct pattern for pdfjs v4+ with Vite.
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl;
 
-const SCALE = 1.5;
+const DEFAULT_SCALE = 1.5;
 
 interface PageInfo {
   pageNum: number; // 1-indexed
   viewport: PageViewport;
+  originalViewport: PageViewport;
 }
 
 interface Props {
@@ -43,8 +44,27 @@ export function PDFViewer({
   currentUser,
 }: Props) {
   const [pages, setPages] = useState<PageInfo[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState<number>(0);
+  const [scale, setScale] = useState(DEFAULT_SCALE);
+
   // Stable map from pageNum → canvas ref so we can render into them
   const canvasRefs = useRef<Map<number, HTMLCanvasElement | null>>(new Map());
+
+  // Track container width for responsive scaling
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Resolve PDF data: local File takes priority over synced bytes.
   // Always return a fresh copy so pdfjs can transfer/detach the buffer without
@@ -76,8 +96,9 @@ export function PDFViewer({
         const infos: PageInfo[] = [];
         for (let i = 1; i <= pdfDoc.numPages; i++) {
           const page: PDFPageProxy = await pdfDoc.getPage(i);
-          const viewport = page.getViewport({ scale: SCALE });
-          infos.push({ pageNum: i, viewport });
+          const originalViewport = page.getViewport({ scale: 1 });
+          const viewport = page.getViewport({ scale: DEFAULT_SCALE });
+          infos.push({ pageNum: i, viewport, originalViewport });
           page.cleanup();
         }
         if (!cancelled) setPages(infos);
@@ -93,7 +114,18 @@ export function PDFViewer({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file, pdfBytes]);
 
-  // Render each page to its canvas after page info is set
+  // Adjust scale when containerWidth or pages change
+  useEffect(() => {
+    if (containerWidth > 0 && pages.length > 0) {
+      const firstPage = pages[0];
+      const padding = 32; // 16px padding on each side
+      const availableWidth = containerWidth - padding;
+      const targetScale = Math.min(DEFAULT_SCALE, availableWidth / firstPage.originalViewport.width);
+      setScale(targetScale);
+    }
+  }, [containerWidth, pages]);
+
+  // Render each page to its canvas after page info or scale is set
   useEffect(() => {
     if (!hasPdf || pages.length === 0) return;
 
@@ -108,9 +140,11 @@ export function PDFViewer({
         pdfDoc = await pdfjsLib.getDocument({ data }).promise;
         if (cancelled) return;
 
-        for (const { pageNum, viewport } of pages) {
+        for (const { pageNum, originalViewport } of pages) {
           const canvas = canvasRefs.current.get(pageNum);
           if (!canvas || cancelled) continue;
+
+          const viewport = originalViewport.clone({ scale });
 
           const dpr = window.devicePixelRatio || 1;
           canvas.width = Math.floor(viewport.width * dpr);
@@ -141,12 +175,13 @@ export function PDFViewer({
       pdfDoc?.destroy();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [file, pdfBytes, pages]);
+  }, [file, pdfBytes, pages, scale]);
 
   if (!hasPdf) {
     const message = pdfError ?? 'Loading PDF…';
     return (
       <div
+        ref={containerRef}
         style={{
           flex: 1,
           display: 'flex',
@@ -162,38 +197,44 @@ export function PDFViewer({
   }
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', background: '#e8e8e8', padding: '16px 0' }}>
-      {pages.map(({ pageNum, viewport }) => (
-        <div
-          key={pageNum}
-          style={{
-            position: 'relative',
-            width: viewport.width,
-            height: viewport.height,
-            margin: '0 auto 16px',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.25)',
-            background: '#fff',
-          }}
-        >
-          {/* Layer 1: PDF canvas */}
-          <canvas
-            ref={(el) => canvasRefs.current.set(pageNum, el)}
-            style={{ position: 'absolute', top: 0, left: 0, display: 'block' }}
-          />
-          {/* Layer 2: Annotation SVG overlay */}
-          <AnnotationLayer
-            pageNum={pageNum}
-            viewport={viewport}
-            annotations={annotations.filter((a) => a.pageNum === pageNum)}
-            toolMode={toolMode}
-            onAnnotationCreate={onAnnotationCreate}
-            onAnnotationSelect={onAnnotationSelect}
-            onAnnotationDelete={onAnnotationDelete}
-            selectedId={selectedId}
-            currentUser={currentUser}
-          />
-        </div>
-      ))}
+    <div
+      ref={containerRef}
+      style={{ flex: 1, width: '100%', overflowY: 'auto', background: '#e8e8e8', padding: '16px 0' }}
+    >
+      {pages.map(({ pageNum, originalViewport }) => {
+        const viewport = originalViewport.clone({ scale });
+        return (
+          <div
+            key={pageNum}
+            style={{
+              position: 'relative',
+              width: viewport.width,
+              height: viewport.height,
+              margin: '0 auto 16px',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.25)',
+              background: '#fff',
+            }}
+          >
+            {/* Layer 1: PDF canvas */}
+            <canvas
+              ref={(el) => canvasRefs.current.set(pageNum, el)}
+              style={{ position: 'absolute', top: 0, left: 0, display: 'block' }}
+            />
+            {/* Layer 2: Annotation SVG overlay */}
+            <AnnotationLayer
+              pageNum={pageNum}
+              viewport={viewport}
+              annotations={annotations.filter((a) => a.pageNum === pageNum)}
+              toolMode={toolMode}
+              onAnnotationCreate={onAnnotationCreate}
+              onAnnotationSelect={onAnnotationSelect}
+              onAnnotationDelete={onAnnotationDelete}
+              selectedId={selectedId}
+              currentUser={currentUser}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }

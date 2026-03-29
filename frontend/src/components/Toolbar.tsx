@@ -61,6 +61,8 @@ export function Toolbar({ mode, onModeChange, onUpload, fileName, hideUpload }: 
         borderBottom: '1px solid #ddd',
         background: '#fafafa',
         flexShrink: 0,
+        overflowX: 'auto',
+        WebkitOverflowScrolling: 'touch',
       }}
     >
       {!hideUpload && (
@@ -74,6 +76,7 @@ export function Toolbar({ mode, onModeChange, onUpload, fileName, hideUpload }: 
             fontSize: 13,
             fontWeight: 500,
             userSelect: 'none',
+            whiteSpace: 'nowrap',
           }}
         >
           Upload PDF
@@ -97,7 +100,7 @@ export function Toolbar({ mode, onModeChange, onUpload, fileName, hideUpload }: 
         </span>
       )}
 
-      <div style={{ display: 'flex', gap: 4, marginLeft: 8 }}>
+      <div style={{ display: 'flex', gap: 4, marginLeft: fileName ? 8 : 0 }}>
         {TOOLS.map((tool) => (
           <button
             key={tool.mode}
@@ -112,6 +115,7 @@ export function Toolbar({ mode, onModeChange, onUpload, fileName, hideUpload }: 
               cursor: 'pointer',
               fontSize: 13,
               fontWeight: mode === tool.mode ? 600 : 400,
+              whiteSpace: 'nowrap',
             }}
           >
             {tool.label}

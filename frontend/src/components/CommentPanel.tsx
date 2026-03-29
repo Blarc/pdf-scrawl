@@ -10,6 +10,7 @@ interface Props {
   onDelete: (id: string) => void;
   ydoc: Y.Doc;
   currentUser: string;
+  isMobile?: boolean;
 }
 
 export function CommentPanel({
@@ -20,6 +21,7 @@ export function CommentPanel({
   onDelete,
   ydoc,
   currentUser,
+  isMobile = false,
 }: Props) {
   const sorted = [...annotations].sort((a, b) => a.createdAt - b.createdAt);
   const unresolved = sorted.filter((a) => !a.resolved);
@@ -29,9 +31,9 @@ export function CommentPanel({
   return (
     <aside
       style={{
-        width: 300,
-        minWidth: 260,
-        borderLeft: '1px solid #ddd',
+        width: isMobile ? '100%' : 300,
+        minWidth: isMobile ? '100%' : 260,
+        borderLeft: isMobile ? 'none' : '1px solid #ddd',
         overflowY: 'auto',
         display: 'flex',
         flexDirection: 'column',

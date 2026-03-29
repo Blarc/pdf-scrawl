@@ -5,6 +5,7 @@ import { PDFViewer } from './components/PDFViewer';
 import { Toolbar } from './components/Toolbar';
 import { CommentPanel } from './components/CommentPanel';
 import { UserPresence } from './components/UserPresence';
+import { useIsMobile } from './hooks/useMediaQuery';
 import type { ToolMode } from './types';
 
 // In production, derive these from environment variables or use window.location.
@@ -44,6 +45,8 @@ function RoomApp({ roomId, onCopyLink, copyLabel }: RoomAppProps) {
 
   const [toolMode, setToolMode] = useState<ToolMode>('select');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [showComments, setShowComments] = useState(false);
+  const isMobile = useIsMobile();
 
   // PDF bytes fetched from the server — shared by both owner (after upload) and joiners.
   const [pdfBytes, setPdfBytes] = useState<Uint8Array | null>(null);
@@ -96,9 +99,26 @@ function RoomApp({ roomId, onCopyLink, copyLabel }: RoomAppProps) {
         }}
       >
         <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.3px' }}>
-          PDF Scrawl
+          PDF Scrawl (Responsive)
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {isMobile && (
+            <button
+              onClick={() => setShowComments(!showComments)}
+              style={{
+                padding: '4px 8px',
+                fontSize: 12,
+                background: showComments ? '#0066cc' : '#f0f0f0',
+                color: showComments ? '#fff' : '#333',
+                border: '1px solid #ddd',
+                borderRadius: 4,
+                cursor: 'pointer',
+                fontWeight: 500,
+              }}
+            >
+              {showComments ? 'PDF' : `Comments (${annotations.length})`}
+            </button>
+          )}
           <button
             onClick={onCopyLink}
             title="Copy shareable link to clipboard"
@@ -113,9 +133,9 @@ function RoomApp({ roomId, onCopyLink, copyLabel }: RoomAppProps) {
               fontWeight: 500,
             }}
           >
-            {copyLabel}
+            {isMobile ? 'Share' : copyLabel}
           </button>
-          <UserPresence awareness={awareness!} connected={connected} />
+          {!isMobile && <UserPresence awareness={awareness!} connected={connected} />}
         </div>
       </div>
 
@@ -129,32 +149,46 @@ function RoomApp({ roomId, onCopyLink, copyLabel }: RoomAppProps) {
       />
 
       {/* ── Main content ─────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        <PDFViewer
-          file={null}
-          pdfBytes={pdfBytes}
-          pdfError={pdfError}
-          annotations={annotations}
-          toolMode={toolMode}
-          onAnnotationCreate={(ann) => {
-            addAnnotation(ann);
-            setSelectedId(ann.id);
-            setToolMode('select');
-          }}
-          onAnnotationSelect={setSelectedId}
-          onAnnotationDelete={deleteAnnotation}
-          selectedId={selectedId}
-          currentUser={USER_NAME}
-        />
-        <CommentPanel
-          annotations={annotations}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
-          onResolve={resolveAnnotation}
-          onDelete={deleteAnnotation}
-          ydoc={ydoc}
-          currentUser={USER_NAME}
-        />
+      <div
+        className="app-main"
+        style={{ display: 'flex', flex: 1, overflow: 'hidden', flexDirection: isMobile ? 'column' : 'row' }}
+      >
+        {(!isMobile || !showComments) && (
+          <PDFViewer
+            file={null}
+            pdfBytes={pdfBytes}
+            pdfError={pdfError}
+            annotations={annotations}
+            toolMode={toolMode}
+            onAnnotationCreate={(ann) => {
+              addAnnotation(ann);
+              setSelectedId(ann.id);
+              setToolMode('select');
+            }}
+            onAnnotationSelect={(id) => {
+              setSelectedId(id);
+              if (isMobile) setShowComments(true);
+            }}
+            onAnnotationDelete={deleteAnnotation}
+            selectedId={selectedId}
+            currentUser={USER_NAME}
+          />
+        )}
+        {(!isMobile || showComments) && (
+          <CommentPanel
+            annotations={annotations}
+            selectedId={selectedId}
+            onSelect={(id) => {
+              setSelectedId(id);
+              if (isMobile) setShowComments(false);
+            }}
+            onResolve={resolveAnnotation}
+            onDelete={deleteAnnotation}
+            ydoc={ydoc}
+            currentUser={USER_NAME}
+            isMobile={isMobile}
+          />
+        )}
       </div>
     </>
   );
@@ -199,6 +233,8 @@ export function App() {
     });
   }, []);
 
+  const isMobile = useIsMobile();
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'system-ui, sans-serif' }}>
       {roomId ? (
@@ -225,7 +261,7 @@ export function App() {
             }}
           >
             <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.3px' }}>
-              PDF Annotate
+              PDF Annotate (Responsive)
             </span>
           </div>
 
@@ -238,7 +274,7 @@ export function App() {
           />
 
           {/* ── Empty state ───────────────────────────────────────── */}
-          <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', flex: 1, overflow: 'hidden', flexDirection: isMobile ? 'column' : 'row' }}>
             <div
               style={{
                 flex: 1,
@@ -247,24 +283,28 @@ export function App() {
                 justifyContent: 'center',
                 color: '#aaa',
                 fontSize: 15,
+                padding: 20,
+                textAlign: 'center',
               }}
             >
               Upload a PDF to get started
             </div>
-            <div
-              style={{
-                width: 320,
-                borderLeft: '1px solid #ddd',
-                background: '#fafafa',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#bbb',
-                fontSize: 13,
-              }}
-            >
-              No annotations yet
-            </div>
+            {!isMobile && (
+              <div
+                style={{
+                  width: 320,
+                  borderLeft: '1px solid #ddd',
+                  background: '#fafafa',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#bbb',
+                  fontSize: 13,
+                }}
+              >
+                No annotations yet
+              </div>
+            )}
           </div>
         </>
       )}
