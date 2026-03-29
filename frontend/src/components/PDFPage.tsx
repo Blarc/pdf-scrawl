@@ -35,7 +35,7 @@ export function PDFPage({
 
   useEffect(() => {
     let cancelled = false;
-    let renderTask: { cancel: () => void } | null = null;
+    let renderTask: { promise: Promise<void>; cancel: () => void } | null = null;
 
     (async () => {
       try {
