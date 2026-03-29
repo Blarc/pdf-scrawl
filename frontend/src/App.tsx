@@ -99,7 +99,7 @@ function RoomApp({ roomId, onCopyLink, copyLabel }: RoomAppProps) {
         }}
       >
         <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.3px' }}>
-          PDF Scrawl (Responsive)
+          PDF Scrawl
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {isMobile && (
@@ -261,7 +261,7 @@ export function App() {
             }}
           >
             <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.3px' }}>
-              PDF Annotate (Responsive)
+              PDF Annotate
             </span>
           </div>
 
