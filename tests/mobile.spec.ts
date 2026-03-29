@@ -123,3 +123,29 @@ test('mobile: clicking on a comment switches back to PDF view', async ({ page })
   await expect(page.locator('canvas').first()).toBeVisible();
   await expect(page.getByText('Annotations (1)')).not.toBeVisible();
 });
+
+test('mobile: clicking comment input does not close the panel', async ({ page }) => {
+  await page.goto('/');
+  await uploadPDF(page);
+
+  // Add an annotation
+  await page.getByRole('button', { name: 'Rectangle' }).click();
+  const svg = page.locator('svg').first();
+  const box = await svg.boundingBox();
+  await page.mouse.move(box!.x + 100, box!.y + 100);
+  await page.mouse.down();
+  await page.mouse.move(box!.x + 200, box!.y + 200);
+  await page.mouse.up();
+
+  // Switch to Comments view
+  await page.getByRole('button', { name: /Comments/ }).click();
+  await expect(page.getByText('Annotations (1)')).toBeVisible();
+
+  // Click on the input field
+  const input = page.locator('input[placeholder="Add comment…"]').first();
+  await input.click();
+
+  // Panel should still be visible
+  await expect(page.getByText('Annotations (1)')).toBeVisible();
+  await expect(page.locator('canvas').first()).not.toBeVisible();
+});

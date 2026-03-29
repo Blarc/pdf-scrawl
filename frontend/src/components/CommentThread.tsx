@@ -19,9 +19,10 @@ interface Props {
   annotationId: string;
   ydoc: Y.Doc;
   currentUser: string;
+  onInputClick?: (e: React.MouseEvent) => void;
 }
 
-export function CommentThread({ annotationId, ydoc, currentUser }: Props) {
+export function CommentThread({ annotationId, ydoc, currentUser, onInputClick }: Props) {
   const { comments, addComment } = useComments(ydoc, annotationId);
   const [text, setText] = useState('');
 
@@ -36,7 +37,7 @@ export function CommentThread({ annotationId, ydoc, currentUser }: Props) {
   };
 
   return (
-    <div style={{ marginTop: 8 }}>
+    <div style={{ marginTop: 8 }} onClick={onInputClick}>
       {comments.map((c) => (
         <div key={c.id} style={{ marginBottom: 4, fontSize: 13, lineHeight: 1.4 }}>
           <span style={{ fontWeight: 600, color: '#333' }}>{c.author}: </span>
@@ -49,6 +50,7 @@ export function CommentThread({ annotationId, ydoc, currentUser }: Props) {
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
+            onClick={onInputClick}
             placeholder="Add comment…"
             maxLength={MAX_COMMENT_LENGTH + 1} // allow typing one char over so the counter turns red
             style={{
@@ -82,7 +84,10 @@ export function CommentThread({ annotationId, ydoc, currentUser }: Props) {
           )}
         </div>
         <button
-          onClick={submit}
+          onClick={(e) => {
+            onInputClick?.(e);
+            submit();
+          }}
           disabled={isOverLimit}
           style={{
             fontSize: 12,

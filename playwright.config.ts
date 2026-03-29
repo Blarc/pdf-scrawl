@@ -18,8 +18,6 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  // Start the backend server before running tests.
-  // The backend server now serves both the API and the frontend static files.
   webServer: [
     {
       command: 'npm run dev:frontend',

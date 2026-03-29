@@ -147,7 +147,12 @@ export function CommentPanel({
             </div>
           </div>
 
-          <CommentThread annotationId={ann.id} ydoc={ydoc} currentUser={currentUser} />
+          <CommentThread
+            annotationId={ann.id}
+            ydoc={ydoc}
+            currentUser={currentUser}
+            onInputClick={(e) => e.stopPropagation()}
+          />
         </div>
       ))}
     </aside>
