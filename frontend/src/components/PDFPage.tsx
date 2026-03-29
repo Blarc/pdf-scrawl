@@ -1,6 +1,7 @@
-import { useRef, useEffect } from 'react';
+import { useMemo, memo } from 'react';
 import type { PDFDocumentProxy, PageViewport } from 'pdfjs-dist';
 import { AnnotationLayer } from './AnnotationLayer';
+import { PDFCanvas } from './PDFCanvas';
 import type { Annotation, ToolMode } from '../types';
 
 interface PDFPageProps {
@@ -17,7 +18,7 @@ interface PDFPageProps {
   currentUser: string;
 }
 
-export function PDFPage({
+export const PDFPage = memo(function PDFPage({
   pageNum,
   pdfDoc,
   scale,
@@ -30,44 +31,12 @@ export function PDFPage({
   selectedId,
   currentUser,
 }: PDFPageProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const viewport = originalViewport.clone({ scale });
-
-  useEffect(() => {
-    let cancelled = false;
-    let renderTask: { promise: Promise<void>; cancel: () => void } | null = null;
-
-    (async () => {
-      try {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        const dpr = window.devicePixelRatio || 1;
-        canvas.width = Math.floor(viewport.width * dpr);
-        canvas.height = Math.floor(viewport.height * dpr);
-        canvas.style.width = `${viewport.width}px`;
-        canvas.style.height = `${viewport.height}px`;
-
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-        ctx.scale(dpr, dpr);
-
-        const page = await pdfDoc.getPage(pageNum);
-        if (cancelled) { page.cleanup(); return; }
-
-        renderTask = page.render({ canvasContext: ctx, viewport });
-        await renderTask.promise;
-        page.cleanup();
-      } catch (err) {
-        if (!cancelled) console.error(`PDF page ${pageNum} render error:`, err);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-      renderTask?.cancel();
-    };
-  }, [pdfDoc, pageNum, scale, viewport]);
+  // Memoize the viewport so it only changes when scale or originalViewport changes.
+  // This prevents the PDFCanvas from re-rendering when annotations or toolMode change.
+  const viewport = useMemo(
+    () => originalViewport.clone({ scale }),
+    [originalViewport, scale]
+  );
 
   return (
     <div
@@ -80,10 +49,21 @@ export function PDFPage({
         background: '#fff',
       }}
     >
-      <canvas
-        ref={canvasRef}
-        style={{ position: 'absolute', top: 0, left: 0, display: 'block' }}
+      {/* 
+        Layer 1: PDF Canvas. 
+        Wrapped in memo, it only re-renders if pdfDoc, pageNum, or viewport change.
+      */}
+      <PDFCanvas
+        pdfDoc={pdfDoc}
+        pageNum={pageNum}
+        viewport={viewport}
       />
+
+      {/* 
+        Layer 2: Annotation SVG overlay.
+        This layer will re-render when toolMode or annotations change, 
+        but it won't affect the PDFCanvas below it.
+      */}
       <AnnotationLayer
         pageNum={pageNum}
         viewport={viewport}
@@ -97,4 +77,4 @@ export function PDFPage({
       />
     </div>
   );
-}
+});
