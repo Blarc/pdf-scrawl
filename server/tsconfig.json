@@ -5,8 +5,9 @@
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "strict": true,
+    "rootDir": "src",
     "outDir": "dist",
     "skipLibCheck": true
   },
-  "include": ["server.ts"]
+  "include": ["src/**/*"]
 }

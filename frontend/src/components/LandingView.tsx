@@ -7,6 +7,7 @@ interface LandingViewProps {
   preRoomToolMode: ToolMode;
   setPreRoomToolMode: (mode: ToolMode) => void;
   handleUpload: (file: File) => void;
+  currentUser: string;
 }
 
 export function LandingView({
@@ -14,6 +15,7 @@ export function LandingView({
   preRoomToolMode,
   setPreRoomToolMode,
   handleUpload,
+  currentUser,
 }: LandingViewProps) {
   return (
     <>

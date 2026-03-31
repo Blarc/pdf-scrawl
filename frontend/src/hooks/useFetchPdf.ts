@@ -21,6 +21,7 @@ export function useFetchPdf(roomId: string | null) {
       try {
         const res = await fetch(`${API_URL}/room/${roomId}/pdf`, {
           signal: controller.signal,
+          credentials: 'include',
         });
         if (!res.ok) {
           if (!cancelled) setPdfError(`PDF not found (${res.status})`);

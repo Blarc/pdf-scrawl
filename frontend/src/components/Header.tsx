@@ -1,5 +1,6 @@
 import { UserPresence } from './UserPresence';
 import type { Awareness } from 'y-protocols/awareness';
+import { useAuth } from '../AuthContext';
 
 interface HeaderProps {
   title: string;
@@ -24,6 +25,8 @@ export function Header({
   awareness,
   connected,
 }: HeaderProps) {
+  const { logout, user } = useAuth();
+
   return (
     <header
       style={{
@@ -37,9 +40,16 @@ export function Header({
         flexShrink: 0,
       }}
     >
-      <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.3px' }}>
-        {title}
-      </span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.3px' }}>
+          {title}
+        </span>
+        {user && (
+          <span style={{ fontSize: 12, color: '#666', marginLeft: 8 }}>
+            Hi, {user.displayName}
+          </span>
+        )}
+      </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         {isMobile && onToggleComments && (
           <button
@@ -79,6 +89,21 @@ export function Header({
         {!isMobile && awareness && (
           <UserPresence awareness={awareness} connected={connected ?? false} />
         )}
+        <button
+          onClick={logout}
+          style={{
+            padding: '4px 8px',
+            fontSize: 12,
+            background: '#fff',
+            color: '#d9534f',
+            border: '1px solid #d43f3a',
+            borderRadius: 4,
+            cursor: 'pointer',
+            fontWeight: 500,
+          }}
+        >
+          Logout
+        </button>
       </div>
     </header>
   );

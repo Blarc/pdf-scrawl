@@ -2,10 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { useIsMobile } from './hooks/useMediaQuery';
 import { RoomApp } from './components/RoomApp';
 import { LandingView } from './components/LandingView';
+import { LoginView } from './components/LoginView';
+import { useAuth } from './AuthContext';
 import { getRoomFromHash, generateRoomId, API_URL } from './config';
 import type { ToolMode } from './types';
 
 export function App() {
+  const { user, loading } = useAuth();
   const [roomId, setRoomId] = useState<string | null>(() => getRoomFromHash());
   const [copyLabel, setCopyLabel] = useState('Share link');
   const [preRoomToolMode, setPreRoomToolMode] = useState<ToolMode>('select');
@@ -28,6 +31,7 @@ export function App() {
       method: 'POST',
       headers: { 'Content-Type': 'application/pdf' },
       body: bytes,
+      credentials: 'include',
     });
 
     window.location.hash = id;
@@ -40,6 +44,18 @@ export function App() {
       setTimeout(() => setCopyLabel('Share link'), 2000);
     });
   }, []);
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+        Loading...
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginView />;
+  }
 
   return (
     <div
@@ -56,6 +72,7 @@ export function App() {
           roomId={roomId}
           onCopyLink={handleCopyLink}
           copyLabel={copyLabel}
+          currentUser={user.displayName}
         />
       ) : (
         <LandingView
@@ -63,6 +80,7 @@ export function App() {
           preRoomToolMode={preRoomToolMode}
           setPreRoomToolMode={setPreRoomToolMode}
           handleUpload={handleUpload}
+          currentUser={user.displayName}
         />
       )}
     </div>

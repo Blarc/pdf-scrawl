@@ -14,10 +14,11 @@ interface RoomAppProps {
   roomId: string;
   onCopyLink: () => void;
   copyLabel: string;
+  currentUser: string;
 }
 
-export function RoomApp({ roomId, onCopyLink, copyLabel }: RoomAppProps) {
-  const { ydoc, awareness, connected } = useYjs(WS_URL, roomId, USER_NAME);
+export function RoomApp({ roomId, onCopyLink, copyLabel, currentUser }: RoomAppProps) {
+  const { ydoc, awareness, connected } = useYjs(WS_URL, roomId, currentUser);
   const { annotations, addAnnotation, resolveAnnotation, deleteAnnotation } =
     useAnnotations(ydoc);
 
@@ -81,7 +82,7 @@ export function RoomApp({ roomId, onCopyLink, copyLabel }: RoomAppProps) {
             onAnnotationSelect={handleAnnotationSelect}
             onAnnotationDelete={deleteAnnotation}
             selectedId={selectedId}
-            currentUser={USER_NAME}
+            currentUser={currentUser}
           />
         )}
         {(!isMobile || showComments) && (
@@ -92,7 +93,7 @@ export function RoomApp({ roomId, onCopyLink, copyLabel }: RoomAppProps) {
             onResolve={resolveAnnotation}
             onDelete={deleteAnnotation}
             ydoc={ydoc}
-            currentUser={USER_NAME}
+            currentUser={currentUser}
             isMobile={isMobile}
           />
         )}
