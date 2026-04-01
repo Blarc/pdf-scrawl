@@ -37,7 +37,7 @@ npm test             # Playwright E2E tests
 Server env vars (all optional):
 - `HOST` — default `localhost`
 - `PORT` — default `1234`
-- `AUTH_TOKEN` — enables bearer token auth via `?token=` query param
+- `SESSION_SECRET` — 32-character key for session encryption
 
 Frontend hardcodes `ws://localhost:1234` and `http://localhost:1234` in `App.tsx`.
 

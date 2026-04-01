@@ -6,7 +6,6 @@ dotenv.config();
 
 export const host = process.env.HOST || '0.0.0.0';
 export const port = parseInt(process.env.PORT || '1234');
-export const AUTH_TOKEN = process.env.AUTH_TOKEN;
 
 // Google OAuth placeholders (should be env vars in production)
 export const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';

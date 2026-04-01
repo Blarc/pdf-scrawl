@@ -9,7 +9,6 @@ import { mkdir } from 'fs/promises';
 import { 
   host, 
   port, 
-  AUTH_TOKEN, 
   SESSION_SECRET, 
   FRONTEND_DIST, 
   PDF_DIR 
@@ -121,9 +120,6 @@ const start = async () => {
     await fastify.listen({ port, host });
 
     console.log(`Server listening on ${host}:${port}`);
-    if (AUTH_TOKEN) {
-      console.log('Legacy Auth Token enabled');
-    }
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);

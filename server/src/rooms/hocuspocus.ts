@@ -1,5 +1,4 @@
 import { Hocuspocus } from '@hocuspocus/server';
-import { AUTH_TOKEN } from '../config.js';
 import { users } from '../auth/users.js';
 
 export const hocuspocus = new Hocuspocus({
@@ -7,11 +6,6 @@ export const hocuspocus = new Hocuspocus({
   async onAuthenticate({ token, documentName, request }) {
     console.log(`Authenticating connection for document: ${documentName}`);
     
-    // Check for AUTH_TOKEN (legacy)
-    if (AUTH_TOKEN && token === AUTH_TOKEN) {
-      return;
-    }
-
     // Check for passport session user
     const session = (request as any).session;
     if (session) {

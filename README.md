@@ -79,7 +79,7 @@ The backend server can be configured via environment variables (all optional):
 
 - `HOST`: The host to listen on (default: `localhost`).
 - `PORT`: The port to listen on (default: `1234`).
-- `AUTH_TOKEN`: If set, enables basic bearer token authentication via the `?token=` query parameter for WebSocket connections.
+- `SESSION_SECRET`: 32-character key for session encryption.
 
 The frontend currently defaults to connecting to `localhost:1234`.
 
