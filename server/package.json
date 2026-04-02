@@ -4,9 +4,9 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "tsx --watch src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js"
+    "dev": "bun run --hot src/server.ts",
+    "build": "bun run tsc",
+    "start": "bun dist/server.js"
   },
   "dependencies": {
     "@fastify/cors": "^11.2.0",

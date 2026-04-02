@@ -1,10 +1,11 @@
-version: '3.8'
-
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
+    command: ["bun", "dist/server.js"]
+    env_file:
+      - server/.env
     ports:
       - "1234:1234"
     environment:

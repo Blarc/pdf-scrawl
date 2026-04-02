@@ -6,10 +6,11 @@
     "server"
   ],
   "scripts": {
-    "dev:frontend": "npm run dev --workspace=frontend",
-    "dev:server": "npm run dev --workspace=server",
-    "dev": "concurrently \"npm run dev:server\" \"npm run dev:frontend\"",
-    "test": "playwright test"
+    "dev:frontend": "bun run --filter=frontend dev",
+    "dev:server": "bun run --filter=server dev",
+    "dev": "concurrently \"bun run dev:server\" \"bun run dev:frontend\"",
+    "start": "bun run server start",
+    "test": "export TMPDIR=$(pwd) && playwright test"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",

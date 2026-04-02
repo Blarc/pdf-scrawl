@@ -13,17 +13,16 @@ PDF Scrawl is a real-time collaborative PDF annotation application. It allows mu
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** React 18, TypeScript, Vite, [PDF.js](https://mozilla.github.io/pdf.js/) for rendering.
+- **Frontend:** React 18, TypeScript, Vite, [PDF.js](https://mozilla.github.io/pdf.js/) for rendering, [wouter](https://www.npmjs.com/package/wouter) for routing.
 - **Real-time Sync:** [Yjs](https://yjs.dev/) (CRDTs) and [Hocuspocus](https://hocuspocus.dev/) for robust WebSocket-based synchronization.
-- **Backend:** Node.js HTTP + WebSocket server.
+- **Backend:** [Bun](https://bun.sh/) HTTP + WebSocket server.
 - **Testing:** [Playwright](https://playwright.dev/) for end-to-end testing.
 
 ## 🏁 Getting Started
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18 or later recommended)
-- npm
+- [Bun](https://bun.sh/) (v1.0 or later recommended)
 
 ### Installation
 
@@ -35,7 +34,7 @@ PDF Scrawl is a real-time collaborative PDF annotation application. It allows mu
 
 2.  **Install dependencies for all workspaces:**
     ```bash
-    npm install
+    bun install
     ```
 
 ### Development
@@ -43,22 +42,22 @@ PDF Scrawl is a real-time collaborative PDF annotation application. It allows mu
 Start both the backend server and the frontend development server concurrently:
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 - **Frontend:** http://localhost:1234
 - **Backend:** ws://localhost:1234 (also handles PDF uploads/downloads via HTTP)
 
 Alternatively, you can start them separately:
-- `npm run dev:server` — Starts only the Hocuspocus/HTTP server.
-- `npm run dev:frontend` — Starts only the Vite frontend.
+- `bun run dev:server` — Starts only the Hocuspocus/HTTP server.
+- `bun run dev:frontend` — Starts only the Vite frontend.
 
 ### Testing
 
 Run the Playwright E2E tests:
 
 ```bash
-npm test
+bun test
 ```
 
 ### 🐳 Docker
@@ -88,7 +87,7 @@ The frontend currently defaults to connecting to `localhost:1234`.
 The project is structured as an npm monorepo with two workspaces:
 
 - `frontend/`: The React application.
-- `server/`: The Node.js collaboration server.
+- `server/`: The Bun collaboration server.
 
 Documents are isolated into rooms based on the URL hash. Each room corresponds to a unique Yjs document name. PDF files are stored ephemerally in `/tmp/pdf-rooms/` (resets on server restart).
 

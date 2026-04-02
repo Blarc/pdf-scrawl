@@ -1,39 +1,34 @@
-# Stage 1: Build the frontend
-FROM node:20-alpine AS frontend-builder
+# syntax=docker/dockerfile:1
+
+FROM oven/bun:latest AS base
 WORKDIR /app
-COPY package*.json ./
-COPY frontend/package*.json ./frontend/
-RUN npm install -w frontend
+
+# Copy workspace manifests first for better layer caching.
+COPY package.json bun.lock ./
+COPY frontend/package.json ./frontend/
+COPY server/package.json ./server/
+
+FROM base AS frontend-builder
 COPY frontend/ ./frontend/
-RUN npm run build -w frontend
+RUN bun install --filter=frontend
+RUN cd frontend && bun run build
 
-# Stage 2: Build the server
-FROM node:20-alpine AS server-builder
-WORKDIR /app
-COPY package*.json ./
-COPY server/package*.json ./server/
-RUN npm install -w server
+FROM base AS server-builder
 COPY server/ ./server/
-RUN npm run build -w server
+RUN bun install --filter=server
+RUN cd server && bun run build
 
-# Stage 3: Final production image
-FROM node:20-alpine
-WORKDIR /app
+FROM base AS runtime
 ENV NODE_ENV=production
 
-# Copy root package files
-COPY package*.json ./
-# Copy server package files
-COPY server/package*.json ./server/
+# Server production dependencies only.
+RUN bun install --production --filter=server
 
-# Install only production dependencies
-RUN npm install --omit=dev -w server
-
-# Copy built server from Stage 2
+# Keep runtime layout aligned with:
+# FRONTEND_DIST = join(process.cwd(), '../frontend/dist')
 COPY --from=server-builder /app/server/dist ./server/dist
-# Copy built frontend from Stage 1
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
+WORKDIR /app/server
 EXPOSE 1234
-# Run the server directly
-CMD ["npm", "start", "-w", "server"]
+CMD ["bun", "dist/server.js"]

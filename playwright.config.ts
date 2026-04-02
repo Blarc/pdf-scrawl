@@ -20,13 +20,13 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'npm run dev:frontend',
+      command: 'bun run dev:frontend',
       port: 5173,
       reuseExistingServer: true,
       timeout: 20_000,
     },
     {
-      command: 'npm run dev:server',
+      command: 'bun run dev:server',
       port: 1234,
       reuseExistingServer: true,
       timeout: 20_000,
