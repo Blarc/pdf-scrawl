@@ -19,7 +19,7 @@ export function useFetchPdf(roomId: string | null) {
     (async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_URL}/room/${roomId}/pdf`, {
+        const res = await fetch(`${API_URL}/rooms/${roomId}/pdf`, {
           signal: controller.signal,
           credentials: 'include',
         });

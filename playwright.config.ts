@@ -5,6 +5,7 @@ export default defineConfig({
   timeout: 10_000,
   expect: { timeout: 8_000 },
   fullyParallel: false, // tests share a WS server
+  workers: 1,
   reporter: [['list']],
   use: {
     // Point baseURL to the Vite dev server for faster feedback
@@ -26,7 +27,7 @@ export default defineConfig({
       timeout: 20_000,
     },
     {
-      command: 'bun run dev:server',
+      command: 'RATE_LIMIT_MAX=10000 bun run dev:server',
       port: 1234,
       reuseExistingServer: true,
       timeout: 20_000,

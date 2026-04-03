@@ -7,7 +7,6 @@ export function LoginView() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -15,7 +14,7 @@ export function LoginView() {
     setError(null);
     try {
       if (isRegistering) {
-        await register(username, password, displayName);
+        await register(username, password);
       } else {
         await login(username, password);
       }
@@ -85,25 +84,6 @@ export function LoginView() {
               required
             />
           </div>
-
-          {isRegistering && (
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Display Name</label>
-              <input
-                type="text"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="What others will see"
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  borderRadius: '4px',
-                  border: '1px solid #ccc',
-                  boxSizing: 'border-box'
-                }}
-              />
-            </div>
-          )}
 
           {error && <div style={{ color: 'red', fontSize: '14px' }}>{error}</div>}
 

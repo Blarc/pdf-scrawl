@@ -3,8 +3,7 @@ import { API_URL } from './config';
 
 export interface User {
   id: string;
-  username?: string;
-  displayName: string;
+  username: string;
   googleId?: string;
 }
 
@@ -12,7 +11,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (username: string, password: string) => Promise<void>;
-  register: (username: string, password: string, displayName: string) => Promise<void>;
+  register: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -61,11 +60,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(userData);
   };
 
-  const register = async (username: string, password: string, displayName: string) => {
+  const register = async (username: string, password: string) => {
     const res = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, displayName }),
+      body: JSON.stringify({ username, password }),
       credentials: 'include',
     });
     if (!res.ok) {

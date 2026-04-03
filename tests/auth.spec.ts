@@ -13,12 +13,11 @@ test('Registration and login flow', async ({ page }) => {
   // Register
   await page.locator('input[type="text"]').first().fill('testuser');
   await page.locator('input[type="password"]').fill('testpassword');
-  await page.getByPlaceholder('What others will see').fill('Test User');
   await page.getByRole('button', { name: 'Register' }).click();
 
   // Should be logged in and see Landing View
   await expect(page.getByText('Upload a PDF to get started')).toBeVisible();
-  await expect(page.getByText('Hi, Test User')).toBeVisible();
+  await expect(page.getByText('Hi, testuser')).toBeVisible();
 
   // Logout
   await page.getByRole('button', { name: 'Logout' }).click();
@@ -34,10 +33,9 @@ test('Login with existing user', async ({ page }) => {
   await page.getByText('Register here').click();
   await page.locator('input[type="text"]').first().fill('loginuser');
   await page.locator('input[type="password"]').fill('loginpassword');
-  await page.getByPlaceholder('What others will see').fill('Login User');
   await page.getByRole('button', { name: 'Register' }).click();
   
-  await expect(page.getByText('Hi, Login User')).toBeVisible();
+  await expect(page.getByText('Hi, loginuser')).toBeVisible();
   await page.getByRole('button', { name: 'Logout' }).click();
 
   // Login
@@ -46,5 +44,5 @@ test('Login with existing user', async ({ page }) => {
   await page.getByRole('button', { name: 'Login' }).click();
 
   // Should be logged in
-  await expect(page.getByText('Hi, Login User')).toBeVisible();
+  await expect(page.getByText('Hi, loginuser')).toBeVisible();
 });

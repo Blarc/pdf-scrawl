@@ -2,7 +2,7 @@ export const USER_NAME = `User-${Math.floor(Math.random() * 9000) + 1000}`;
 
 const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 export const WS_URL = import.meta.env.VITE_WS_URL || `${protocol}//${window.location.host}`;
-export const API_URL = import.meta.env.VITE_API_URL || `${window.location.origin}`;
+export const API_URL = (import.meta.env.VITE_API_URL || `${window.location.origin}`) + '/api';
 
 /** Read the room ID from the URL hash, e.g. "#abc123" → "abc123". */
 export function getRoomFromHash(): string | null {

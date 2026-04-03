@@ -27,7 +27,7 @@ export function App() {
     // Upload the PDF to the server before switching to the room view,
     // so that when RoomApp mounts and fetches the PDF it's already available.
     const bytes = await file.arrayBuffer();
-    await fetch(`${API_URL}/room/${id}/pdf`, {
+    await fetch(`${API_URL}/rooms/${id}/pdf`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/pdf' },
       body: bytes,
@@ -72,7 +72,7 @@ export function App() {
           roomId={roomId}
           onCopyLink={handleCopyLink}
           copyLabel={copyLabel}
-          currentUser={user.displayName}
+          currentUser={user.username}
         />
       ) : (
         <LandingView
@@ -80,7 +80,7 @@ export function App() {
           preRoomToolMode={preRoomToolMode}
           setPreRoomToolMode={setPreRoomToolMode}
           handleUpload={handleUpload}
-          currentUser={user.displayName}
+          currentUser={user.username}
         />
       )}
     </div>

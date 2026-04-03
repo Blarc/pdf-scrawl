@@ -46,7 +46,7 @@ export function Header({
         </span>
         {user && (
           <span style={{ fontSize: 12, color: '#666', marginLeft: 8 }}>
-            Hi, {user.displayName}
+            Hi, {user.username}
           </span>
         )}
       </div>

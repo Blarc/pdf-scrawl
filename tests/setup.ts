@@ -15,7 +15,6 @@ export async function loginUser(page: Page, username = `user_${Math.random().toS
   // Register
   await page.locator('input[type="text"]').first().fill(username);
   await page.locator('input[type="password"]').fill(password);
-  await page.getByPlaceholder('What others will see').fill(displayName);
   await page.getByRole('button', { name: 'Register' }).click();
 
   // Wait for login to complete
