@@ -2,8 +2,10 @@ import { FastifyInstance } from 'fastify';
 import fastifyPassport from '@fastify/passport';
 import bcrypt from 'bcrypt';
 import { User, users } from './users.js';
+import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from '../config.js';
 
 export async function authRoutes(fastify: FastifyInstance) {
+
   fastify.post('/auth/register', async (request, reply) => {
     const { username, password, displayName } = request.body as any;
     if (!username || !password) {
@@ -34,34 +36,44 @@ export async function authRoutes(fastify: FastifyInstance) {
     }
   );
 
-  fastify.get(
-    '/auth/google',
-    {
-      preHandler: async (request, reply) => {
-        const { returnTo } = request.query as { returnTo?: string };
-        if (returnTo) {
-          request.session.set('returnTo', returnTo);
-        }
+  const googleEnabled = Boolean(GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET);
+  if (googleEnabled) {
+    fastify.get(
+      '/auth/google',
+      {
+        preHandler: async (request, reply) => {
+          const { returnTo } = request.query as { returnTo?: string };
+          if (returnTo) {
+            request.session.set('returnTo', returnTo);
+          }
+        },
+        preValidation: fastifyPassport.authorize('google', { scope: ['profile', 'email'] }) as any,
       },
-      preValidation: fastifyPassport.authorize('google', { scope: ['profile', 'email'] }) as any,
-    },
-    async (request, reply) => {
-      // Redirects to Google
-    }
-  );
-
-  fastify.get(
-    '/auth/google/callback',
-    { preValidation: fastifyPassport.authenticate('google', { failureRedirect: '/login' }) as any },
-    async (request, reply) => {
-      const returnTo = request.session.get('returnTo');
-      if (returnTo) {
-        request.session.set('returnTo', undefined);
-        return reply.redirect(returnTo);
+      async (request, reply) => {
+        // Redirects to Google
       }
-      return reply.redirect('/');
-    }
-  );
+    );
+
+    fastify.get(
+      '/auth/google/callback',
+      { preValidation: fastifyPassport.authenticate('google', { failureRedirect: '/login' }) as any },
+      async (request, reply) => {
+        const returnTo = request.session.get('returnTo');
+        if (returnTo) {
+          request.session.set('returnTo', undefined);
+          return reply.redirect(returnTo);
+        }
+        return reply.redirect('/');
+      }
+    );
+  } else {
+    fastify.get('/auth/google', async (request, reply) => {
+      return reply.status(503).send({ error: 'Google OAuth is not configured' });
+    });
+    fastify.get('/auth/google/callback', async (request, reply) => {
+      return reply.status(503).send({ error: 'Google OAuth is not configured' });
+    });
+  }
 
   fastify.get('/auth/logout', async (request, reply) => {
     request.logout();

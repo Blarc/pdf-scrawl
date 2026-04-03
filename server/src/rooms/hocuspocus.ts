@@ -3,14 +3,16 @@ import { users } from '../auth/users.js';
 
 export const hocuspocus = new Hocuspocus({
   name: 'pdf-scrawl-hocuspocus',
-  async onAuthenticate({ token, documentName, request }) {
+  async onAuthenticate({ documentName, request }) {
     console.log(`Authenticating connection for document: ${documentName}`);
     
-    // Check for passport session user
+    // Check for passport session user which is attached to request in server.ts
+    // upgrade handler, where cookies are parsed and decoded
     const session = (request as any).session;
     if (session) {
-      const passport = session.get('passport');
-      const userId = passport?.user;
+      // @fastify/passport stores the serialized user directly under "passport".
+      // serialization is defined in auth/passport.ts
+      const userId = session.get('passport');
       if (userId) {
         const user = users.find((u) => u.id === userId);
         if (user) {

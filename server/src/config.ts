@@ -11,6 +11,7 @@ export const port = parseInt(process.env.PORT || '1234');
 export const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 export const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
 export const SESSION_SECRET = process.env.SESSION_SECRET || '';
+export const SESSION_SALT = process.env.SESSION_SALT || 'salt123456789101';
 
 export const FRONTEND_DIST = join(process.cwd(), '../frontend/dist');
 export const PDF_DIR = join(tmpdir(), 'pdf-rooms');

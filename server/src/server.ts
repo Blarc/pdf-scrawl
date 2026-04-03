@@ -3,15 +3,17 @@ import cors from '@fastify/cors';
 import staticPlugin from '@fastify/static';
 import secureSession from '@fastify/secure-session';
 import fastifyPassport from '@fastify/passport';
+import fastifyCookie from '@fastify/cookie';
 import { WebSocketServer } from 'ws';
 import { mkdir } from 'fs/promises';
 
-import { 
-  host, 
-  port, 
-  SESSION_SECRET, 
-  FRONTEND_DIST, 
-  PDF_DIR 
+import {
+  host,
+  port,
+  SESSION_SECRET,
+  SESSION_SALT,
+  FRONTEND_DIST,
+  PDF_DIR
 } from './config.js';
 import { setupPassport } from './auth/passport.js';
 import { authRoutes } from './auth/routes.js';
@@ -41,6 +43,8 @@ const start = async () => {
       methods: ['GET', 'POST', 'OPTIONS'],
     });
 
+    fastify.register(fastifyCookie);
+
     fastify.addContentTypeParser('application/pdf', { parseAs: 'buffer' }, (req, payload, done) => {
       done(null, payload);
     });
@@ -48,12 +52,14 @@ const start = async () => {
     // Session and Passport Setup
     fastify.register(secureSession, {
       secret: SESSION_SECRET,
+      salt: SESSION_SALT,
       cookie: {
         path: '/',
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
       },
-    } as any);
+    });
 
     fastify.register(fastifyPassport.initialize());
     fastify.register(fastifyPassport.secureSession());
@@ -92,12 +98,8 @@ const start = async () => {
         return;
       }
 
-      // Try to parse session from cookie for authentication in Hocuspocus
-      const cookies = (request.headers.cookie || '').split(';').reduce((acc, curr) => {
-        const [key, value] = curr.trim().split('=');
-        acc[key] = value;
-        return acc;
-      }, {} as Record<string, string>);
+      // Parse cookies from raw upgrade request for authentication in Hocuspocus
+      const cookies = fastify.parseCookie(request.headers.cookie ?? '');
 
       const sessionCookie = cookies['session'];
       if (sessionCookie) {

@@ -31,27 +31,31 @@ export function setupPassport() {
     })
   );
 
-  // Google Strategy
-  fastifyPassport.use(
-    'google',
-    new GoogleStrategy(
-      {
-        clientID: GOOGLE_CLIENT_ID,
-        clientSecret: GOOGLE_CLIENT_SECRET,
-        callbackURL: `http://localhost:${port}/auth/google/callback`,
-      },
-      async (accessToken, refreshToken, profile, done) => {
-        let user = users.find((u) => u.googleId === profile.id);
-        if (!user) {
-          user = {
-            id: Math.random().toString(36).substring(2, 15),
-            googleId: profile.id,
-            displayName: profile.displayName || profile.emails?.[0]?.value || 'Google User',
-          };
-          users.push(user);
+  // Google Strategy (optional in environments without OAuth credentials)
+  if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
+    fastifyPassport.use(
+      'google',
+      new GoogleStrategy(
+        {
+          clientID: GOOGLE_CLIENT_ID,
+          clientSecret: GOOGLE_CLIENT_SECRET,
+          callbackURL: `http://localhost:${port}/auth/google/callback`,
+        },
+        async (accessToken, refreshToken, profile, done) => {
+          let user = users.find((u) => u.googleId === profile.id);
+          if (!user) {
+            user = {
+              id: Math.random().toString(36).substring(2, 15),
+              googleId: profile.id,
+              displayName: profile.displayName || profile.emails?.[0]?.value || 'Google User',
+            };
+            users.push(user);
+          }
+          return done(null, user);
         }
-        return done(null, user);
-      }
-    )
-  );
+      )
+    );
+  } else {
+    console.warn('Google OAuth disabled: GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET not set');
+  }
 }
