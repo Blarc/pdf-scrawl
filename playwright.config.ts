@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
-  timeout: 45_000,
+  timeout: 10_000,
   expect: { timeout: 8_000 },
   fullyParallel: false, // tests share a WS server
   reporter: [['list']],

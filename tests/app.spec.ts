@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import path from 'path';
+import { loginUser } from './setup';
 
 const PDF_PATH = path.resolve(__dirname, 'fixtures/sample.pdf');
 
@@ -24,6 +25,7 @@ async function clickTool(page: Page, label: string) {
 
 test.beforeEach(async ({ page }) => {
   page.on('console', msg => console.log(`[Browser] ${msg.type()}: ${msg.text()}`));
+  await loginUser(page);
 });
 
 test('renders the app shell', async ({ page }) => {
@@ -335,14 +337,15 @@ test('annotation drawn in one tab appears in a second tab', async ({ browser, ba
   const page1 = await ctx1.newPage();
   const page2 = await ctx2.newPage();
 
-  // Tab 1: upload PDF → creates the room
-  await page1.goto('/');
+  // Tab 1: Login and upload PDF → creates the room
+  await loginUser(page1);
   await uploadPDF(page1);
   // Wait for the room URL to be set
   await expect(page1).toHaveURL(/#.+/);
   const roomUrl = page1.url();
 
-  // Tab 2: navigate to the same room URL → receives PDF via Yjs sync
+  // Tab 2: login, then navigate to the same room URL → receives PDF via Yjs sync
+  await loginUser(page2);
   await page2.goto(roomUrl);
   // Wait for the PDF to be synced and rendered in tab 2
   await expect(page2.locator('canvas').first()).toBeVisible({ timeout: 15_000 });
@@ -380,13 +383,14 @@ test('comment added in one tab appears in a second tab', async ({ browser, baseU
   const page1 = await ctx1.newPage();
   const page2 = await ctx2.newPage();
 
-  // Tab 1: upload PDF → creates the room
-  await page1.goto('/');
+  // Tab 1: login and upload PDF → creates the room
+  await loginUser(page1);
   await uploadPDF(page1);
   await expect(page1).toHaveURL(/#.+/);
   const roomUrl = page1.url();
 
-  // Tab 2: join via the room URL
+  // Tab 2: join via the room URL after logging in
+  await loginUser(page2);
   await page2.goto(roomUrl);
   await expect(page2.locator('canvas').first()).toBeVisible({ timeout: 15_000 });
 

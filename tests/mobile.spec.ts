@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import path from 'path';
+import { loginUser } from './setup';
 
 const PDF_PATH = path.resolve(__dirname, 'fixtures/sample.pdf');
 
@@ -19,6 +20,7 @@ async function uploadPDF(page: Page) {
 
 test.beforeEach(async ({ page }) => {
   page.on('console', msg => console.log(`[Browser] ${msg.type()}: ${msg.text()}`));
+  await loginUser(page);
 });
 
 test('mobile: renders the app shell and toolbar', async ({ page }) => {
