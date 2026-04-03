@@ -8,6 +8,8 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
+    // https://github.com/yjs/yjs/issues/438
+    dedupe: ['yjs', 'y-protocols'],
   },
   optimizeDeps: {
     exclude: ['pdfjs-dist'],
