@@ -75,7 +75,13 @@ export default fp(async (fastify) => {
 
     fastifyPassport.registerUserSerializer(async (user: User, _request: any) => user.id)
     fastifyPassport.registerUserDeserializer(async (id: string, _request: any) => {
-        return await fastify.usersRepository.findById(id)
+        try {
+            const user = await fastify.usersRepository.findById(id)
+            return user ?? null
+        } catch (error) {
+            fastify.log.warn({ error, userId: id }, 'Failed to deserialize user from session')
+            return null
+        }
     })
 }, {
     name: 'session',
