@@ -6,6 +6,7 @@ import { LoginView } from './components/LoginView';
 import { useAuth } from './AuthContext';
 import { getRoomFromHash, generateRoomId, API_URL } from './config';
 import type { ToolMode } from './types';
+import {Route, Switch, useLocation} from "wouter";
 
 export function App() {
   const { user, loading } = useAuth();
@@ -13,6 +14,7 @@ export function App() {
   const [copyLabel, setCopyLabel] = useState('Share link');
   const [preRoomToolMode, setPreRoomToolMode] = useState<ToolMode>('select');
   const isMobile = useIsMobile();
+  const [, navigate] = useLocation(); // wouter's navigation hook
 
   // Listen for hash changes (back/forward navigation)
   useEffect(() => {
@@ -34,9 +36,8 @@ export function App() {
       credentials: 'include',
     });
 
-    window.location.hash = id;
-    setRoomId(id);
-  }, []);
+    navigate(`/rooms/${id}`);
+  }, [navigate, user]);
 
   const handleCopyLink = useCallback(() => {
     navigator.clipboard.writeText(window.location.href).then(() => {
@@ -66,23 +67,32 @@ export function App() {
         fontFamily: 'system-ui, sans-serif',
       }}
     >
-      {roomId ? (
-        <RoomApp
-          key={roomId}
-          roomId={roomId}
-          onCopyLink={handleCopyLink}
-          copyLabel={copyLabel}
-          currentUser={user.username}
-        />
-      ) : (
-        <LandingView
-          isMobile={isMobile}
-          preRoomToolMode={preRoomToolMode}
-          setPreRoomToolMode={setPreRoomToolMode}
-          handleUpload={handleUpload}
-          currentUser={user.username}
-        />
-      )}
+      <Switch>
+        <Route path="/">
+          <LandingView
+              isMobile={isMobile}
+              preRoomToolMode={preRoomToolMode}
+              setPreRoomToolMode={setPreRoomToolMode}
+              handleUpload={handleUpload}
+              currentUser={user.username}
+          />
+        </Route>
+        <Route path="/rooms/:id">
+          {params => (
+              <RoomApp
+                  key={params.id}
+                  roomId={params.id}
+                  onCopyLink={handleCopyLink}
+                  copyLabel={copyLabel}
+                  currentUser={user.username}
+              />
+          )}
+        </Route>
+        <Route path="/login">
+          {/* If a dedicated login route is ever needed, it would go here */}
+          <LoginView />
+        </Route>
+      </Switch>
     </div>
   );
 }
