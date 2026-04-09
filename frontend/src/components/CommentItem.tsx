@@ -1,6 +1,9 @@
 import type * as Y from 'yjs';
 import type { Annotation } from '../types';
 import { CommentThread } from './CommentThread';
+import { Surface } from './ui/Surface';
+import { Typography } from './ui/Typography';
+import { Button } from './ui/Button';
 
 interface CommentItemProps {
   annotation: Annotation;
@@ -22,95 +25,74 @@ export function CommentItem({
   currentUser,
 }: CommentItemProps) {
   return (
-    <div
-      style={{
-        borderBottom: '1px solid #eee',
-        padding: '10px 12px',
-        background: isSelected ? '#f0f7ff' : 'transparent',
-        cursor: 'pointer',
-        opacity: annotation.resolved ? 0.65 : 1,
-      }}
+    <Surface
+      level={isSelected ? 'high' : 'low'}
+      className={`
+        group flex flex-col p-3 rounded-lg cursor-pointer transition-all duration-200
+        ${isSelected ? 'shadow-sm' : 'hover:bg-surface-container-high'}
+        ${annotation.resolved ? 'opacity-60' : 'opacity-100'}
+      `}
       onClick={() => onSelect(annotation.id)}
     >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          gap: 4,
-        }}
-      >
-        <div style={{ fontSize: 12, color: '#666', lineHeight: 1.4 }}>
-          <span
-            style={{
-              display: 'inline-block',
-              width: 10,
-              height: 10,
-              borderRadius: annotation.type === 'freehand' ? '50%' : 2,
-              background: annotation.color,
-              marginRight: 5,
-              verticalAlign: 'middle',
-            }}
-          />
-          <strong>p.{annotation.pageNum}</strong> · {annotation.type} · {annotation.author}
-          {annotation.resolved && (
+      <div className="flex justify-between items-start gap-2 mb-2">
+        <div className="flex flex-col gap-0.5 min-w-0">
+          <div className="flex items-center gap-2">
             <span
-              style={{
-                marginLeft: 6,
-                fontSize: 11,
-                color: '#4caf50',
-                fontWeight: 600,
-              }}
-            >
-              Resolved
-            </span>
-          )}
+              className={`
+                inline-block w-2.5 h-2.5 shrink-0
+                ${annotation.type === 'freehand' ? 'rounded-full' : 'rounded-sm'}
+              `}
+              style={{ background: annotation.color }}
+            />
+            <Typography level="label-sm" className="text-on-surface font-bold truncate">
+              {annotation.author}
+            </Typography>
+          </div>
+          <Typography level="body" className="text-on-surface opacity-60 text-xs">
+            Page {annotation.pageNum} · {annotation.type}
+            {annotation.resolved && (
+              <span className="ml-2 text-success-foreground font-bold text-[#4caf50]">
+                Resolved
+              </span>
+            )}
+          </Typography>
         </div>
-        <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-          <button
+
+        <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button
             onClick={(e) => {
               e.stopPropagation();
               onResolve(annotation.id, !annotation.resolved);
             }}
-            style={{
-              fontSize: 11,
-              padding: '2px 7px',
-              borderRadius: 4,
-              border: '1px solid #ccc',
-              background: annotation.resolved ? '#e8f5e9' : '#fff',
-              cursor: 'pointer',
-              color: '#333',
-            }}
+            variant="secondary"
+            size="sm"
+            className="!px-2 !py-0.5 !text-[10px]"
           >
             {annotation.resolved ? 'Reopen' : 'Resolve'}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={(e) => {
               e.stopPropagation();
               onDelete(annotation.id);
             }}
-            style={{
-              fontSize: 11,
-              padding: '2px 7px',
-              borderRadius: 4,
-              border: '1px solid #ffcdd2',
-              background: '#fff',
-              cursor: 'pointer',
-              color: '#c62828',
-            }}
+            variant="secondary"
+            size="sm"
+            className="!px-2 !py-0.5 !text-[10px] text-error border-error border-opacity-20"
             title="Delete annotation"
           >
             ×
-          </button>
+          </Button>
         </div>
       </div>
 
-      <CommentThread
-        annotationId={annotation.id}
-        ydoc={ydoc}
-        currentUser={currentUser}
-        onInputClick={(e) => e.stopPropagation()}
-      />
-    </div>
+      <div onClick={(e) => e.stopPropagation()} className="mt-1">
+        <CommentThread
+          annotationId={annotation.id}
+          ydoc={ydoc}
+          currentUser={currentUser}
+          onInputClick={(e) => e.stopPropagation()}
+        />
+      </div>
+    </Surface>
   );
 }

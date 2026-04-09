@@ -7,8 +7,9 @@ import { CommentPanel } from './CommentPanel';
 import { Header } from './Header';
 import { useIsMobile } from '../hooks/useMediaQuery';
 import { useFetchPdf } from '../hooks/useFetchPdf';
-import { WS_URL, USER_NAME } from '../config';
+import { WS_URL } from '../config';
 import type { ToolMode } from '../types';
+import { Surface } from './ui/Surface';
 
 interface RoomAppProps {
   roomId: string;
@@ -46,9 +47,9 @@ export function RoomApp({ roomId, onCopyLink, copyLabel, currentUser }: RoomAppP
   };
 
   return (
-    <>
+    <Surface level="base" className="flex flex-col flex-1 overflow-hidden relative">
       <Header
-        title="PDF Scrawl (Responsive)"
+        title="PDF Scrawl"
         isMobile={isMobile}
         showComments={showComments}
         onToggleComments={() => setShowComments(!showComments)}
@@ -68,8 +69,7 @@ export function RoomApp({ roomId, onCopyLink, copyLabel, currentUser }: RoomAppP
       />
 
       <div
-        className="app-main"
-        style={{ display: 'flex', flex: 1, overflow: 'hidden', flexDirection: isMobile ? 'column' : 'row' }}
+        className={`flex flex-1 overflow-hidden ${isMobile ? 'flex-col' : 'flex-row'}`}
       >
         {(!isMobile || !showComments) && (
           <PDFViewer
@@ -98,6 +98,6 @@ export function RoomApp({ roomId, onCopyLink, copyLabel, currentUser }: RoomAppP
           />
         )}
       </div>
-    </>
+    </Surface>
   );
 }

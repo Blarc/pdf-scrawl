@@ -1,6 +1,8 @@
 import type * as Y from 'yjs';
 import type { Annotation } from '../types';
 import { CommentItem } from './CommentItem';
+import { Surface } from './ui/Surface';
+import { Typography } from './ui/Typography';
 
 interface Props {
   annotations: Annotation[];
@@ -29,50 +31,47 @@ export function CommentPanel({
   const groups = [...unresolved, ...resolved];
 
   return (
-    <aside
-      style={{
-        width: isMobile ? '100%' : 300,
-        minWidth: isMobile ? '100%' : 260,
-        borderLeft: isMobile ? 'none' : '1px solid #ddd',
-        overflowY: 'auto',
-        display: 'flex',
-        flexDirection: 'column',
-        background: '#fff',
-        flexShrink: 0,
-      }}
+    <Surface
+      level="bright"
+      className={`
+        flex flex-col shrink-0 overflow-hidden
+        ${isMobile ? 'w-full flex-1' : 'w-80 border-l border-outline-variant border-opacity-10'}
+      `}
     >
-      <div
-        style={{
-          padding: '10px 14px',
-          fontWeight: 600,
-          borderBottom: '1px solid #eee',
-          fontSize: 13,
-          color: '#333',
-          background: '#fafafa',
-          flexShrink: 0,
-        }}
+      <Surface
+        level="low"
+        className="px-4 py-2.5 shrink-0 border-b border-outline-variant border-opacity-10"
       >
-        Annotations ({annotations.length})
+        <Typography level="title-sm" className="text-on-surface">
+          Annotations ({annotations.length})
+        </Typography>
+      </Surface>
+
+      <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-2 p-2">
+        {annotations.length === 0 && (
+          <div className="p-8 text-center">
+            <Typography level="body" className="text-on-surface opacity-30 italic">
+              No annotations yet. Use the drawing tools to annotate the PDF.
+            </Typography>
+          </div>
+        )}
+
+        {groups.map((ann) => (
+          <CommentItem
+            key={ann.id}
+            annotation={ann}
+            isSelected={selectedId === ann.id}
+            onSelect={onSelect}
+            onResolve={onResolve}
+            onDelete={onDelete}
+            ydoc={ydoc}
+            currentUser={currentUser}
+          />
+        ))}
+        
+        {/* Spacer for bottom padding without using borders */}
+        <div className="h-4 shrink-0" />
       </div>
-
-      {annotations.length === 0 && (
-        <div style={{ padding: 16, color: '#999', fontSize: 13 }}>
-          No annotations yet. Use the drawing tools to annotate the PDF.
-        </div>
-      )}
-
-      {groups.map((ann) => (
-        <CommentItem
-          key={ann.id}
-          annotation={ann}
-          isSelected={selectedId === ann.id}
-          onSelect={onSelect}
-          onResolve={onResolve}
-          onDelete={onDelete}
-          ydoc={ydoc}
-          currentUser={currentUser}
-        />
-      ))}
-    </aside>
+    </Surface>
   );
 }

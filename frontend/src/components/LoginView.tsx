@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { API_URL } from '../config';
+import { Surface } from './ui/Surface';
+import { Typography } from './ui/Typography';
+import { Button } from './ui/Button';
 
 export function LoginView() {
   const { login, register } = useAuth();
@@ -29,96 +32,64 @@ export function LoginView() {
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100%',
-      backgroundColor: '#f9f9f9',
-      padding: '20px'
-    }}>
-      <div style={{
-        maxWidth: '400px',
-        width: '100%',
-        backgroundColor: '#fff',
-        padding: '30px',
-        borderRadius: '8px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-      }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '24px' }}>
-          {isRegistering ? 'Create an account' : 'Sign in to PDF Scrawl'}
-        </h2>
+    <Surface level="base" className="flex flex-col items-center justify-center min-h-screen p-6">
+      <Surface level="lowest" className="max-w-md w-full p-10 rounded-xl shadow-ambient border border-outline-variant border-opacity-10">
+        <Typography level="display-lg" as="h2" className="text-on-surface opacity-10 text-center mb-2 select-none">
+          SCRAWL
+        </Typography>
+        <Typography level="headline" as="h1" className="text-center mb-8 text-on-surface">
+          {isRegistering ? 'Create an account' : 'Sign in to Scrawl'}
+        </Typography>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Username</label>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <div className="flex flex-col gap-2">
+            <Typography level="label-sm" as="label" className="text-on-surface opacity-60">
+              Username
+            </Typography>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '10px',
-                borderRadius: '4px',
-                border: '1px solid #ccc',
-                boxSizing: 'border-box'
-              }}
+              className="w-full px-4 py-2.5 rounded-lg bg-surface-container-highest border-none focus:ring-2 focus:ring-primary focus:outline-none transition-all text-sm font-inter"
+              placeholder="Enter your username"
               required
             />
           </div>
 
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Password</label>
+          <div className="flex flex-col gap-2">
+            <Typography level="label-sm" as="label" className="text-on-surface opacity-60">
+              Password
+            </Typography>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '10px',
-                borderRadius: '4px',
-                border: '1px solid #ccc',
-                boxSizing: 'border-box'
-              }}
+              className="w-full px-4 py-2.5 rounded-lg bg-surface-container-highest border-none focus:ring-2 focus:ring-primary focus:outline-none transition-all text-sm font-inter"
+              placeholder="Enter your password"
               required
             />
           </div>
 
-          {error && <div style={{ color: 'red', fontSize: '14px' }}>{error}</div>}
+          {error && (
+            <Typography level="body" className="text-error text-xs font-medium bg-error bg-opacity-5 p-2 rounded border border-error border-opacity-10">
+              {error}
+            </Typography>
+          )}
 
-          <button type="submit" style={{
-            backgroundColor: '#007bff',
-            color: '#fff',
-            padding: '12px',
-            borderRadius: '4px',
-            border: 'none',
-            fontSize: '16px',
-            fontWeight: 600,
-            cursor: 'pointer'
-          }}>
+          <Button type="submit" variant="primary" size="lg" className="mt-2">
             {isRegistering ? 'Register' : 'Login'}
-          </button>
+          </Button>
         </form>
 
-        <div style={{ marginTop: '20px', textAlign: 'center' }}>
-          <p>Or sign in with</p>
-          <button
+        <div className="mt-8 flex flex-col items-center gap-4">
+          <Typography level="label-sm" className="text-on-surface opacity-30">
+            Or continue with
+          </Typography>
+          <Button
             onClick={handleGoogleLogin}
-            style={{
-              backgroundColor: '#fff',
-              color: '#333',
-              padding: '10px',
-              borderRadius: '4px',
-              border: '1px solid #ccc',
-              fontSize: '16px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-              width: '100%'
-            }}
+            variant="secondary"
+            size="lg"
+            className="w-full flex items-center justify-center gap-3"
           >
             <svg width="18" height="18" viewBox="0 0 18 18">
               <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
@@ -127,19 +98,19 @@ export function LoginView() {
               <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.443 2.017.957 4.956L3.964 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
             </svg>
             Google
-          </button>
+          </Button>
         </div>
 
-        <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '14px' }}>
+        <Typography level="body" className="block text-center mt-8 text-on-surface opacity-60">
           {isRegistering ? 'Already have an account?' : "Don't have an account?"}{' '}
           <span
             onClick={() => setIsRegistering(!isRegistering)}
-            style={{ color: '#007bff', cursor: 'pointer', fontWeight: 500 }}
+            className="text-primary cursor-pointer font-bold hover:underline"
           >
             {isRegistering ? 'Sign in here' : 'Register here'}
           </span>
-        </p>
-      </div>
-    </div>
+        </Typography>
+      </Surface>
+    </Surface>
   );
 }

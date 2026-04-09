@@ -56,15 +56,9 @@ export function PDFViewer({
     return (
       <div
         ref={containerRef}
-        style={{
-          flex: 1,
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: (pdfError || docError) ? '#c00' : '#aaa',
-          fontSize: 15,
-        }}
+        className={`flex-1 w-full flex items-center justify-center font-inter text-sm ${
+          pdfError || docError ? 'text-error' : 'text-on-surface opacity-30'
+        }`}
       >
         {message}
       </div>
@@ -74,7 +68,7 @@ export function PDFViewer({
   return (
     <div
       ref={containerRef}
-      style={{ flex: 1, width: '100%', overflowY: 'auto', background: '#e8e8e8', padding: '16px 0' }}
+      className="flex-1 w-full overflow-y-auto bg-surface-container-low py-8 custom-scrollbar"
     >
       {pdfDoc && pages.map(({ pageNum, originalViewport }) => (
         <PDFPage

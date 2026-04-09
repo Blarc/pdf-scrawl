@@ -1,6 +1,9 @@
 import { UserPresence } from './UserPresence';
 import type { Awareness } from 'y-protocols/awareness';
 import { useAuth } from '../AuthContext';
+import { Surface } from './ui/Surface';
+import { Button } from './ui/Button';
+import { Typography } from './ui/Typography';
 
 interface HeaderProps {
   title: string;
@@ -28,83 +31,69 @@ export function Header({
   const { logout, user } = useAuth();
 
   return (
-    <header
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '0 16px',
-        height: 44,
-        borderBottom: '1px solid #ddd',
-        background: '#fff',
-        flexShrink: 0,
-      }}
+    <Surface
+      level="lowest"
+      className="flex items-center justify-between h-11 px-4 shrink-0 transition-colors duration-200"
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.3px' }}>
+      <div className="flex items-center gap-3">
+        <Typography level="title-sm" as="h1" className="text-on-surface">
           {title}
-        </span>
+        </Typography>
         {user && (
-          <span style={{ fontSize: 12, color: '#666', marginLeft: 8 }}>
+          <Typography level="label-sm" className="text-on-surface opacity-60 ml-2">
             Hi, {user.username}
-          </span>
+          </Typography>
         )}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+
+      <div className="flex items-center gap-3">
         {isMobile && onToggleComments && (
-          <button
+          <Button
             onClick={onToggleComments}
-            style={{
-              padding: '4px 8px',
-              fontSize: 12,
-              background: showComments ? '#0066cc' : '#f0f0f0',
-              color: showComments ? '#fff' : '#333',
-              border: '1px solid #ddd',
-              borderRadius: 4,
-              cursor: 'pointer',
-              fontWeight: 500,
-            }}
+            size="sm"
+            variant={showComments ? 'primary' : 'secondary'}
           >
             {showComments ? 'PDF' : `Comments (${commentCount})`}
-          </button>
+          </Button>
         )}
+        
         {onCopyLink && (
-          <button
+          <Button
             onClick={onCopyLink}
+            variant="primary"
+            size="sm"
+            className="hidden sm:inline-flex"
             title="Copy shareable link to clipboard"
-            style={{
-              padding: '4px 12px',
-              fontSize: 12,
-              background: '#0066cc',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 4,
-              cursor: 'pointer',
-              fontWeight: 500,
-            }}
           >
-            {isMobile ? 'Share' : copyLabel}
-          </button>
+            {copyLabel}
+          </Button>
         )}
+
+        {onCopyLink && isMobile && (
+          <Button
+            onClick={onCopyLink}
+            variant="primary"
+            size="sm"
+            className="sm:hidden"
+            title="Copy shareable link to clipboard"
+          >
+            Share
+          </Button>
+        )}
+
         {!isMobile && awareness && (
           <UserPresence awareness={awareness} connected={connected ?? false} />
         )}
-        <button
+
+        <Button
           onClick={logout}
-          style={{
-            padding: '4px 8px',
-            fontSize: 12,
-            background: '#fff',
-            color: '#d9534f',
-            border: '1px solid #d43f3a',
-            borderRadius: 4,
-            cursor: 'pointer',
-            fontWeight: 500,
-          }}
+          variant="secondary"
+          size="sm"
+          className="text-error border-error border-opacity-20 hover:bg-error hover:bg-opacity-5"
         >
           Logout
-        </button>
+        </Button>
       </div>
-    </header>
+    </Surface>
   );
 }

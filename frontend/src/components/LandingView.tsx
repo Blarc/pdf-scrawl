@@ -1,5 +1,7 @@
 import { Header } from './Header';
 import { Toolbar } from './Toolbar';
+import { Typography } from './ui/Typography';
+import { Surface } from './ui/Surface';
 import type { ToolMode } from '../types';
 
 interface LandingViewProps {
@@ -18,8 +20,8 @@ export function LandingView({
   currentUser,
 }: LandingViewProps) {
   return (
-    <>
-      <Header title="PDF Annotate (Responsive)" isMobile={isMobile} />
+    <div className="flex flex-col flex-1 overflow-hidden bg-surface">
+      <Header title="PDF Scrawl" isMobile={isMobile} />
       
       <Toolbar
         mode={preRoomToolMode}
@@ -28,39 +30,31 @@ export function LandingView({
         fileName={null}
       />
 
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', flexDirection: isMobile ? 'column' : 'row' }}>
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#aaa',
-            fontSize: 15,
-            padding: 20,
-            textAlign: 'center',
-          }}
-        >
-          Upload a PDF to get started
+      <div className={`flex flex-1 overflow-hidden ${isMobile ? 'flex-col' : 'flex-row'}`}>
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-surface-container-lowest">
+          <Typography level="display-lg" as="h2" className="text-on-surface opacity-10 mb-4 select-none">
+            SCRAWL
+          </Typography>
+          <Typography level="headline" as="h3" className="text-on-surface mb-2">
+            The Living Blueprint
+          </Typography>
+          <Typography level="body" className="text-on-surface opacity-60 max-w-md">
+            Upload a PDF to start a real-time collaborative session.
+            Draw, highlight, and comment with your team.
+          </Typography>
         </div>
+
         {!isMobile && (
-          <div
-            className="sidebar-desktop"
-            style={{
-              width: 320,
-              borderLeft: '1px solid #ddd',
-              background: '#fafafa',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#bbb',
-              fontSize: 13,
-            }}
+          <Surface
+            level="low"
+            className="w-80 flex flex-col items-center justify-center border-l border-outline-variant border-opacity-10"
           >
-            No annotations yet
-          </div>
+            <Typography level="label-sm" className="text-on-surface opacity-30">
+              No annotations yet
+            </Typography>
+          </Surface>
         )}
       </div>
-    </>
+    </div>
   );
 }

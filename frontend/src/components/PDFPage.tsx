@@ -40,13 +40,10 @@ export const PDFPage = memo(function PDFPage({
 
   return (
     <div
+      className="relative mx-auto mb-8 bg-surface-container-lowest shadow-ambient ring-1 ring-outline-variant ring-opacity-5"
       style={{
-        position: 'relative',
         width: viewport.width,
         height: viewport.height,
-        margin: '0 auto 16px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.25)',
-        background: '#fff',
       }}
     >
       {/* 

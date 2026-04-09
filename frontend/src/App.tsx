@@ -6,7 +6,8 @@ import { LoginView } from './components/LoginView';
 import { useAuth } from './AuthContext';
 import { getRoomFromHash, generateRoomId, API_URL } from './config';
 import type { ToolMode } from './types';
-import {Route, Switch, useLocation} from "wouter";
+import { Route, Switch, useLocation } from "wouter";
+import { Surface } from './components/ui/Surface';
 
 export function App() {
   const { user, loading } = useAuth();
@@ -14,9 +15,8 @@ export function App() {
   const [copyLabel, setCopyLabel] = useState('Share link');
   const [preRoomToolMode, setPreRoomToolMode] = useState<ToolMode>('select');
   const isMobile = useIsMobile();
-  const [, navigate] = useLocation(); // wouter's navigation hook
+  const [, navigate] = useLocation();
 
-  // Listen for hash changes (back/forward navigation)
   useEffect(() => {
     const onHashChange = () => setRoomId(getRoomFromHash());
     window.addEventListener('hashchange', onHashChange);
@@ -25,9 +25,6 @@ export function App() {
 
   const handleUpload = useCallback(async (file: File) => {
     const id = generateRoomId();
-
-    // Upload the PDF to the server before switching to the room view,
-    // so that when RoomApp mounts and fetches the PDF it's already available.
     const bytes = await file.arrayBuffer();
     await fetch(`${API_URL}/rooms/${id}/pdf`, {
       method: 'POST',
@@ -37,7 +34,7 @@ export function App() {
     });
 
     navigate(`/rooms/${id}`);
-  }, [navigate, user]);
+  }, [navigate]);
 
   const handleCopyLink = useCallback(() => {
     navigator.clipboard.writeText(window.location.href).then(() => {
@@ -48,9 +45,9 @@ export function App() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-        Loading...
-      </div>
+      <Surface level="base" className="flex items-center justify-center h-screen">
+        <div className="animate-pulse font-manrope text-on-surface opacity-50">Loading...</div>
+      </Surface>
     );
   }
 
@@ -59,40 +56,32 @@ export function App() {
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-        fontFamily: 'system-ui, sans-serif',
-      }}
-    >
+    <Surface level="base" className="flex flex-col h-screen overflow-hidden">
       <Switch>
         <Route path="/">
           <LandingView
-              isMobile={isMobile}
-              preRoomToolMode={preRoomToolMode}
-              setPreRoomToolMode={setPreRoomToolMode}
-              handleUpload={handleUpload}
-              currentUser={user.username}
+            isMobile={isMobile}
+            preRoomToolMode={preRoomToolMode}
+            setPreRoomToolMode={setPreRoomToolMode}
+            handleUpload={handleUpload}
+            currentUser={user.username}
           />
         </Route>
         <Route path="/rooms/:id">
           {params => (
-              <RoomApp
-                  key={params.id}
-                  roomId={params.id}
-                  onCopyLink={handleCopyLink}
-                  copyLabel={copyLabel}
-                  currentUser={user.username}
-              />
+            <RoomApp
+              key={params.id}
+              roomId={params.id}
+              onCopyLink={handleCopyLink}
+              copyLabel={copyLabel}
+              currentUser={user.username}
+            />
           )}
         </Route>
         <Route path="/login">
-          {/* If a dedicated login route is ever needed, it would go here */}
           <LoginView />
         </Route>
       </Switch>
-    </div>
+    </Surface>
   );
 }
