@@ -1,20 +1,31 @@
-import { FastifyPluginAsync } from 'fastify'
-import { User, CredentialsSchema } from '../../../schemas/user'
+import {FastifyPluginAsync, FastifyRequest} from 'fastify'
 import fastifyPassport from "@fastify/passport";
 import bcrypt from 'bcrypt';
+import Type from "typebox";
+import {LoginDtoSchema, RegisterDto, RegisterDtoSchema} from "../../../schemas/auth";
 
 const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.post(
         '/login',
         {
             schema: {
-                body: CredentialsSchema,
+                body: LoginDtoSchema,
+                response: {
+                    200: Type.Object({
+                        success: Type.Boolean(),
+                        message: Type.Optional(Type.String())
+                    }),
+                    401: Type.Object({
+                        message: Type.String()
+                    })
+                },
                 tags: ['Authentication']
             },
             preValidation: fastifyPassport.authenticate('local') as any
         },
-        async (request) => {
-            return request.user;
+        async () => {
+            fastify.log.info('User logged in');
+            return { success: true }
         }
     );
 
@@ -22,32 +33,43 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         '/register',
         {
             schema: {
-                body: CredentialsSchema,
+                body: RegisterDtoSchema,
                 tags: ['Authentication']
             }
         },
-        async (request, reply) => {
-            const { username, password } = request.body as any;
-            if (!username || !password) {
-                return reply.status(400).send('Username and password are required');
+        async (request: FastifyRequest<{ Body: RegisterDto }>, reply) => {
+            const { username, email, password } = request.body;
+
+            fastify.log.info(`Registering user: ${username} (${email})`);
+
+
+            // Check username uniqueness
+            if (await fastify.usersRepository.findByUsername(username)) {
+                return reply.status(400).send({ error: 'Username already exists' });
             }
 
-            if (await fastify.usersRepository.findByUsername(username)) {
-                return reply.status(400).send('Username already exists');
+            // Check email uniqueness
+            if (await fastify.usersRepository.findByEmail(email)) {
+                return reply.status(400).send({ error: 'Email already exists' });
             }
 
             const hashedPassword = await bcrypt.hash(password, 10);
-            const user: User = await fastify.usersRepository.addUser({
-                id: Math.random().toString(36).substring(2, 15),
+
+            const user = await fastify.usersRepository.createAndGetUser({
                 username,
+                email,
                 password: hashedPassword,
             });
 
-            return reply.status(201).send({ id: user.id, username: user.username });
-        });
+            return reply.status(201).send({
+                id: user.id,
+                username: user.username,
+            });
+        }
+    );
 
     fastify.get('/logout', async (request) => {
-        request.logout();
+        await request.logout();
         return { success: true };
     });
 

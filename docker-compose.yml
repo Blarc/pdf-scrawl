@@ -3,7 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: ["bun", "dist/server.js"]
     env_file:
       - server/.env
     ports:

@@ -1,4 +1,4 @@
-import { Type } from 'typebox'
+import {Type} from 'typebox'
 
 export const StringSchema = Type.String({
     minLength: 1,
@@ -11,6 +11,11 @@ export const EmailSchema = Type.String({
     maxLength: 255
 })
 
-export const DateTimeSchema = Type.String({ format: 'date-time' })
+export const DateTimeSchema = Type.String({format: 'date-time'})
 
-export const IdSchema = Type.Integer({ minimum: 1 })
+export const IdSchema = Type.Integer({minimum: 1})
+
+export const PasswordSchema = Type.String({
+    pattern: '^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).*$',
+    minLength: 8
+})

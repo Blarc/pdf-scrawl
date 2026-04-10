@@ -24,11 +24,11 @@ ENV NODE_ENV=production
 # Server production dependencies only.
 RUN bun install --production --filter=server
 
-# Keep runtime layout aligned with:
-# FRONTEND_DIST = join(process.cwd(), '../frontend/dist')
 COPY --from=server-builder /app/server/dist ./server/dist
+COPY --from=server-builder /app/server/drizzle ./server/drizzle
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
 WORKDIR /app/server
 EXPOSE 1234
+
 CMD ["bun", "dist/server.js"]

@@ -13,6 +13,8 @@ declare module 'fastify' {
             PDF_DIR: string;
             GOOGLE_CLIENT_ID: string;
             GOOGLE_CLIENT_SECRET: string;
+            DATABASE_TYPE: 'sqlite' | 'postgres';
+            DATABASE_URL: string;
         };
     }
 }
@@ -23,6 +25,8 @@ const schema = {
         'COOKIE_SECRET',
         'COOKIE_NAME',
         'COOKIE_SALT',
+        'DATABASE_TYPE',
+        'DATABASE_URL'
     ],
     properties: {
         PORT: {
@@ -56,6 +60,15 @@ const schema = {
         },
         GOOGLE_CLIENT_SECRET: {
             type: 'string'
+        },
+        DATABASE_TYPE: {
+            type: 'string',
+            enum: ['sqlite', 'postgres'],
+            default: 'sqlite'
+        },
+        DATABASE_URL: {
+            type: 'string',
+            default: 'sqlite.db'
         }
     }
 }

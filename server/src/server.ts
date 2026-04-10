@@ -25,6 +25,10 @@ function getLoggerOptions () {
     return { level: process.env.LOG_LEVEL ?? 'info' }
 }
 
+export async function runMigrations() {
+    await import("./db/migrate.js");
+}
+
 const fastify = Fastify({
     logger: getLoggerOptions(),
     bodyLimit: 50 * 1024 * 1024, // 50 MB
@@ -44,6 +48,8 @@ const fastify = Fastify({
 })
 
 async function start () {
+    runMigrations();
+
     // Register your application as a normal plugin.
     // fp must be used to override default error handler
     await fastify.register(fp(serviceApp))

@@ -8,14 +8,31 @@
 - **Frontend:** React 18, TypeScript, Vite, Tailwind CSS (Design System), [PDF.js](https://mozilla.github.io/pdf.js/) for rendering, [wouter](https://github.com/molefrog/wouter) for routing.
 - **Real-time Sync:** [Yjs](https://yjs.dev/) (CRDTs) for data consistency and [Hocuspocus](https://hocuspocus.dev/) for WebSocket-based synchronization.
 - **Backend:** [Fastify](https://www.fastify.io/) running on [Bun](https://bun.sh/), handling both HTTP (PDF uploads/downloads) and WebSocket (collaboration) traffic.
+- **Database:** [Drizzle ORM](https://orm.drizzle.team/) with support for **SQLite (Bun native)** and **PostgreSQL**.
 - **Testing:** [Playwright](https://playwright.dev/) for end-to-end testing.
 
 ### Architecture
 The project is a monorepo structured into two main workspaces:
 - `frontend/`: The React-based user interface.
-- `server/`: The Fastify/Bun server managing collaboration sessions and ephemeral PDF storage.
+- `server/`: The Fastify/Bun server managing collaboration sessions, ephemeral PDF storage, and user persistence.
 
-Collaboration is room-based, where each room is identified by a unique ID in the URL. Rooms are isolated Yjs documents, and PDF files are stored temporarily on the server (by default in `/tmp/pdf-rooms/`).
+Collaboration is room-based, where each room is identified by a unique ID in the URL. Rooms are isolated Yjs documents, and PDF files are stored temporarily on the server (by default in `/tmp/pdf-rooms/`). User data is persisted in a database.
+
+## Database Management
+
+### Configuration
+Database settings are controlled via environment variables (e.g., in `.env` or `server/.env`):
+- `DATABASE_TYPE`: `sqlite` (default) or `postgres`.
+- `DATABASE_URL`: Connection string or file path (default: `sqlite.db`).
+
+### Migrations
+To manage the database schema, use the following commands within the `server/` directory:
+- `bun run db:generate`: Generates migration files based on schema changes.
+- `bun run db:push`: Pushes schema changes directly to the database (recommended for development).
+- `bun run db:studio`: Opens Drizzle Studio to explore and manage data.
+
+**Production Migrations:**
+In production (and Docker), migrations are automatically applied on container startup via the `entrypoint.ts` script, which executes `migrate.ts` before starting the server. This ensures the database schema is always up-to-date with the deployed code.
 
 ## Building and Running
 
